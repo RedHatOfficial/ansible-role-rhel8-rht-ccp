@@ -1,2 +1,17 @@
----
-# vars file for ansible-role-rhel8-rht-ccp
+var_sshd_set_keepalive: '0'
+sshd_idle_timeout_value: '300'
+sshd_listening_port: '22'
+var_system_crypto_policy: FIPS
+var_selinux_policy_name: targeted
+var_selinux_state: enforcing
+var_password_pam_unix_remember: '5'
+var_accounts_passwords_pam_faillock_deny: '5'
+var_password_pam_dcredit: '-1'
+var_password_pam_difok: '3'
+var_password_pam_ocredit: '-2'
+var_password_pam_lcredit: '-2'
+var_password_pam_ucredit: '-2'
+var_password_pam_retry: '3'
+var_accounts_password_minlen_login_defs: '6'
+var_accounts_password_warn_age_login_defs: '7'
+var_accounts_minimum_age_login_defs: '7'
