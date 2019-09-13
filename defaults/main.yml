@@ -1,6 +1,23 @@
 ---
 # defaults file for rhel8_rht_ccp
 
+sshd_idle_timeout_value: true
+sshd_listening_port: true
+var_accounts_minimum_age_login_defs: true
+var_accounts_password_minlen_login_defs: true
+var_accounts_password_warn_age_login_defs: true
+var_accounts_passwords_pam_faillock_deny: true
+var_password_pam_dcredit: true
+var_password_pam_difok: true
+var_password_pam_lcredit: true
+var_password_pam_ocredit: true
+var_password_pam_retry: true
+var_password_pam_ucredit: true
+var_password_pam_unix_remember: true
+var_selinux_policy_name: true
+var_selinux_state: true
+var_sshd_set_keepalive: true
+var_system_crypto_policy: true
 accounts_minimum_age_login_defs: true
 accounts_password_minlen_login_defs: true
 accounts_password_pam_dcredit: true
@@ -57,6 +74,7 @@ package_aide_installed: true
 package_telnet_removed: true
 patch_strategy: true
 reboot_required: true
+require_singleuser_auth: true
 restrict_strategy: true
 security_patches_up_to_date: true
 selinux_policytype: true
