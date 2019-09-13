@@ -1,3 +1,101 @@
+- name: Unit Service Exists
+  shell: systemctl list-unit-files | grep -q '^abrtd.service'
+  register: service_file_exists
+  ignore_errors: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+
+- name: Disable service abrtd
+  systemd:
+    name: abrtd.service
+    enabled: 'no'
+    state: stopped
+    masked: 'yes'
+  when:
+  - service_file_exists.rc == 0
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+
+- name: Unit Socket Exists
+  shell: systemctl list-unit-files | grep -q '^abrtd.socket'
+  register: socket_file_exists
+  ignore_errors: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+
+- name: Disable socket abrtd
+  systemd:
+    name: abrtd.socket
+    enabled: 'no'
+    state: stopped
+    masked: 'yes'
+  when:
+  - socket_file_exists.rc == 0
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+
 - name: Ensure firewalld is installed
   package:
     name: '{{ item }}'
@@ -73,7 +171,7 @@
   - NIST-800-53-AC-17(a)
   - NIST-800-171-3.1.12
 
-- name: Disable SSH Root Login
+- name: Rule title of sshd_disable_root_login
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -114,7 +212,7 @@
   - NIST-800-171-3.1.5
   - CJIS-5.5.6
 
-- name: Disable Host-Based Authentication
+- name: Rule title of disable_host_auth
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -188,11 +286,12 @@
   - NIST-800-53-SA-8(i)
   - NIST-800-53-AC-12
   - NIST-800-53-AC-17(b)
+  - NIST-800-53-SC-10
   - NIST-800-171-3.1.11
   - PCI-DSS-Req-8.1.8
   - CJIS-5.5.6
 
-- name: Allow Only SSH Protocol 2
+- name: Rule title of sshd_allow_only_protocol2
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -231,7 +330,7 @@
   - NIST-800-171-3.5.4
   - CJIS-5.5.6
 
-- name: Disable SSH Access via Empty Passwords
+- name: Rule title of sshd_disable_empty_passwords
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -271,7 +370,7 @@
   - NIST-800-171-3.1.5
   - CJIS-5.5.6
 
-- name: Do Not Allow SSH Environment Options
+- name: Rule title of sshd_do_not_permit_user_env
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -283,7 +382,7 @@
     lineinfile:
       path: /etc/ssh/sshd_config
       create: true
-      line: PermitUserEnvironment no
+      line: PermitUserEnvironment yes
       state: present
       insertbefore: ^Match
       validate: /usr/sbin/sshd -t -f %s
@@ -344,10 +443,11 @@
   - NIST-800-53-SA-8
   - NIST-800-53-AC-12
   - NIST-800-53-AC-17(b)
+  - NIST-800-53-SC-10
   - NIST-800-171-3.1.11
   - CJIS-5.5.6
 
-- name: Enable SSH Warning Banner
+- name: Rule title of sshd_enable_warning_banner
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
@@ -386,44 +486,6 @@
   - NIST-800-53-AC-8(c)(3)
   - NIST-800-53-AC-17(b)
   - NIST-800-171-3.1.9
-  - CJIS-5.5.6
-
-- name: Disable SSH Support for .rhosts Files
-  block:
-  - name: Deduplicate values from /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: false
-      regexp: (?i)^\s*IgnoreRhosts\s+
-      state: absent
-  - name: Insert correct line to /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: true
-      line: IgnoreRhosts yes
-      state: present
-      insertbefore: ^Match
-      validate: /usr/sbin/sshd -t -f %s
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - sshd_disable_rhosts | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - sshd_disable_rhosts
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80899-8
-  - NIST-800-53-AC-3
-  - NIST-800-53-AC-17(b)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.12
   - CJIS-5.5.6
 
 - name: Ensure telnet is removed
@@ -466,6 +528,116 @@
   - low_complexity | bool
   - low_disruption | bool
   - high_severity | bool
+
+- name: Unit Service Exists
+  shell: systemctl list-unit-files | grep -q '^telnet.service'
+  register: service_file_exists
+  ignore_errors: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - service_telnet_disabled | bool
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_telnet_disabled
+  - high_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80887-3
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.4.7
+
+- name: Disable service telnet
+  systemd:
+    name: telnet.service
+    enabled: 'no'
+    state: stopped
+    masked: 'yes'
+  when:
+  - service_file_exists.rc == 0
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - service_telnet_disabled | bool
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_telnet_disabled
+  - high_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80887-3
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.4.7
+
+- name: Unit Socket Exists
+  shell: systemctl list-unit-files | grep -q '^telnet.socket'
+  register: socket_file_exists
+  ignore_errors: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - service_telnet_disabled | bool
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_telnet_disabled
+  - high_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80887-3
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.4.7
+
+- name: Disable socket telnet
+  systemd:
+    name: telnet.socket
+    enabled: 'no'
+    state: stopped
+    masked: 'yes'
+  when:
+  - socket_file_exists.rc == 0
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - service_telnet_disabled | bool
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_telnet_disabled
+  - high_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80887-3
+  - NIST-800-53-AC-17(8)
+  - NIST-800-53-CM-7
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.4.7
 
 - name: Check existence of yum on Fedora
   stat:
@@ -616,7 +788,8 @@
 - name: Read signatures in GPG key
   shell: 'set -o pipefail
 
-    gpg --show-key --with-colons "/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release" | grep "^fpr" | cut -d ":" -f 10
+    gpg --show-keys --with-fingerprint --with-colons "/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release" | grep -A1 "^pub" | grep
+    "^fpr" | cut -d ":" -f 10
 
     '
   args:
@@ -650,7 +823,7 @@
 
 - name: Set Fact - Valid fingerprints
   set_fact:
-    gpg_valid_fingerprints: ("567E347AD0044ADE55BA8A5F199E2F91FD431D51" "43A6E49C4A38F4BE9ABF2A5345689C882FA658E0")
+    gpg_valid_fingerprints: ("567E347AD0044ADE55BA8A5F199E2F91FD431D51" "6A6AA7C97C8890AEC6AEBFE2F76F66C3D4082792")
   tags:
   - ensure_redhat_gpgkey_installed
   - high_severity
@@ -1680,11 +1853,44 @@
   - NIST-800-171-3.4.6
   - CJIS-5.10.1
 
+- name: Ensure kernel module 'sctp' is disabled
+  lineinfile:
+    create: true
+    dest: /etc/modprobe.d/sctp.conf
+    regexp: sctp
+    line: install sctp /bin/true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - reboot_required | bool
+  - medium_severity | bool
+  - kernel_module_sctp_disabled | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+  tags:
+  - kernel_module_sctp_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - reboot_required
+  - CCE-80834-5
+  - NIST-800-53-CM-7
+  - NIST-800-171-3.4.6
+  - CJIS-5.10.1
+
 - name: Enable service firewalld
-  service:
-    name: firewalld
-    enabled: 'yes'
-    state: started
+  block:
+  - name: Gather the package facts
+    package_facts:
+      manager: auto
+  - name: Enable service firewalld
+    service:
+      name: firewalld
+      enabled: 'yes'
+      state: started
+    when:
+    - '"firewalld" in ansible_facts.packages'
   when:
   - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
   - service_firewalld_enabled | bool
@@ -1919,6 +2125,7 @@
     regexp: ^#?ENCRYPT_METHOD
     line: ENCRYPT_METHOD SHA512
     state: present
+    create: true
   tags:
   - set_password_hashing_algorithm_logindefs
   - medium_severity
@@ -1949,6 +2156,7 @@
     regexp: ^#?crypt_style
     line: crypt_style = sha512
     state: present
+    create: true
   tags:
   - set_password_hashing_algorithm_libuserconf
   - medium_severity
@@ -2254,6 +2462,7 @@
     regexp: ^PASS_MIN_LEN *[0-9]*
     state: present
     line: PASS_MIN_LEN        {{ var_accounts_password_minlen_login_defs }}
+    create: true
   tags:
   - accounts_password_minlen_login_defs
   - medium_severity
@@ -2280,6 +2489,7 @@
     regexp: ^PASS_WARN_AGE *[0-9]*
     state: present
     line: PASS_WARN_AGE        {{ var_accounts_password_warn_age_login_defs }}
+    create: true
   tags:
   - accounts_password_warn_age_login_defs
   - medium_severity
