@@ -1,6 +1,10 @@
 Red Hat Corporate Profile for Certified Cloud Providers (RH CCP)
 =========
 
+[![Build Status](https://travis-ci.org/RedHatOfficial/ansible-role-rhel8-rht-ccp.svg?branch=master)](https://travis-ci.org/RedHatOfficial/ansible-role-rhel8-rht-ccp)
+[![Ansible Role](https://img.shields.io/ansible/role/40357.svg)](https://galaxy.ansible.com/RedHatOfficial/rhel8_rht_ccp)
+[![GitHub release](https://img.shields.io/github/release/RedHatOfficial/ansible-role-rhel8-rht-ccp.svg)](https://github.com/RedHatOfficial/ansible-role-rhel8-rht-ccp/releases/latest)
+
 Ansible remediation role for profile rht-ccp  
 Profile Title:  Red Hat Corporate Profile for Certified Cloud Providers (RH CCP)  
 Profile Description:  
