@@ -1,1377 +1,3 @@
-- name: Ensure kernel module 'sctp' is disabled
-  lineinfile:
-    create: true
-    dest: /etc/modprobe.d/sctp.conf
-    regexp: sctp
-    line: install sctp /bin/true
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - disable_strategy | bool
-  - reboot_required | bool
-  - medium_severity | bool
-  - kernel_module_sctp_disabled | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-  tags:
-  - kernel_module_sctp_disabled
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - medium_disruption
-  - reboot_required
-  - CCE-80834-5
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-7(b)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.6
-  - CJIS-5.10.1
-
-- name: Ensure kernel module 'dccp' is disabled
-  lineinfile:
-    create: true
-    dest: /etc/modprobe.d/dccp.conf
-    regexp: dccp
-    line: install dccp /bin/true
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - kernel_module_dccp_disabled | bool
-  - disable_strategy | bool
-  - reboot_required | bool
-  - medium_severity | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-  tags:
-  - kernel_module_dccp_disabled
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - medium_disruption
-  - reboot_required
-  - CCE-80833-7
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-7(b)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.6
-  - CJIS-5.10.1
-
-- name: Enable service firewalld
-  block:
-  - name: Gather the package facts
-    package_facts:
-      manager: auto
-  - name: Enable service firewalld
-    service:
-      name: firewalld
-      enabled: 'yes'
-      state: started
-    when:
-    - '"firewalld" in ansible_facts.packages'
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - service_firewalld_enabled | bool
-  - no_reboot_needed | bool
-  - medium_severity | bool
-  - enable_strategy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - service_firewalld_enabled
-  - medium_severity
-  - enable_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80877-4
-  - NIST-800-53-AC-4
-  - NIST-800-53-CM-7(b)
-  - NIST-800-53-CA-3(5)
-  - NIST-800-53-SC-7(21)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.3
-  - NIST-800-171-3.4.7
-
-- name: Configure SELinux Policy
-  lineinfile:
-    path: /etc/sysconfig/selinux
-    regexp: ^SELINUXTYPE=
-    line: SELINUXTYPE={{ var_selinux_policy_name }}
-    create: true
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - selinux_policytype | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - selinux_policytype
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80868-3
-  - NIST-800-53-AC-3
-  - NIST-800-53-AC-3(3)(a)
-  - NIST-800-53-AU-9
-  - NIST-800-53-SC-7(21)
-  - NIST-800-171-3.1.2
-  - NIST-800-171-3.7.2
-
-- name: Ensure SELinux State is Enforcing
-  lineinfile:
-    path: /etc/sysconfig/selinux
-    regexp: ^SELINUX=
-    line: SELINUX={{ var_selinux_state }}
-    create: true
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - low_disruption | bool
-  - selinux_state | bool
-  - low_complexity | bool
-  tags:
-  - selinux_state
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80869-1
-  - NIST-800-53-AC-3
-  - NIST-800-53-AC-3(3)(a)
-  - NIST-800-53-AU-9
-  - NIST-800-53-SC-7(21)
-  - NIST-800-171-3.1.2
-  - NIST-800-171-3.7.2
-
-- name: Read list of system executables without root ownership
-  command: find /bin/ /usr/bin/ /usr/local/bin/ /sbin/ /usr/sbin/ /usr/local/sbin/ /usr/libexec \! -user root
-  register: no_root_system_executables
-  changed_when: false
-  failed_when: false
-  check_mode: false
-  tags:
-  - file_ownership_binary_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80806-3
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - file_ownership_binary_dirs | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Set ownership to root of system executables
-  file:
-    path: '{{ item }}'
-    owner: root
-  with_items: '{{ no_root_system_executables.stdout_lines }}'
-  when:
-  - no_root_system_executables.stdout_lines | length > 0
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - file_ownership_binary_dirs | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-  tags:
-  - file_ownership_binary_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80806-3
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Read list of world and group writable system executables
-  command: find /bin /usr/bin /usr/local/bin /sbin /usr/sbin /usr/local/sbin /usr/libexec -perm /022 -type f
-  register: world_writable_library_files
-  changed_when: false
-  failed_when: false
-  check_mode: false
-  tags:
-  - file_permissions_binary_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80809-7
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - file_permissions_binary_dirs | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Remove world/group writability of system executables
-  file:
-    path: '{{ item }}'
-    mode: go-w
-  with_items: '{{ world_writable_library_files.stdout_lines }}'
-  when:
-  - world_writable_library_files.stdout_lines | length > 0
-  - file_permissions_binary_dirs | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-  tags:
-  - file_permissions_binary_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80809-7
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Read list libraries without root ownership
-  command: find -L /usr/lib /usr/lib64 /lib /lib64 \! -user root
-  register: libraries_not_owned_by_root
-  changed_when: false
-  failed_when: false
-  check_mode: false
-  tags:
-  - file_ownership_library_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80807-1
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - file_ownership_library_dirs | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Set ownership of system libraries to root
-  file:
-    path: '{{ item }}'
-    owner: root
-  with_items: '{{ libraries_not_owned_by_root.stdout_lines }}'
-  when:
-  - libraries_not_owned_by_root | length > 0
-  - file_ownership_library_dirs | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-  tags:
-  - file_ownership_library_dirs
-  - medium_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80807-1
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Read list of world and group writable files in libraries directories
-  command: find /lib /lib64 /usr/lib /usr/lib64 -perm /022 -type f
-  register: world_writable_library_files
-  changed_when: false
-  failed_when: false
-  check_mode: false
-  tags:
-  - file_permissions_library_dirs
-  - medium_severity
-  - restrict_strategy
-  - high_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80815-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - high_complexity | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - file_permissions_library_dirs | bool
-  - medium_disruption | bool
-
-- name: Disable world/group writability to library files
-  file:
-    path: '{{ item }}'
-    mode: go-w
-  with_items: '{{ world_writable_library_files.stdout_lines }}'
-  when:
-  - world_writable_library_files.stdout_lines | length > 0
-  - high_complexity | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - file_permissions_library_dirs | bool
-  - medium_disruption | bool
-  tags:
-  - file_permissions_library_dirs
-  - medium_severity
-  - restrict_strategy
-  - high_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80815-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Test for existence /etc/shadow
-  stat:
-    path: /etc/shadow
-  register: file_exists
-  tags:
-  - file_owner_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80804-8
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - file_owner_etc_shadow | bool
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure owner 0 on /etc/shadow
-  file:
-    path: /etc/shadow
-    owner: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - file_owner_etc_shadow | bool
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_owner_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80804-8
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/shadow
-  stat:
-    path: /etc/shadow
-  register: file_exists
-  tags:
-  - file_groupowner_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80799-0
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - file_groupowner_etc_shadow | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure group owner 0 on /etc/shadow
-  file:
-    path: /etc/shadow
-    group: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - file_groupowner_etc_shadow | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_groupowner_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80799-0
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/passwd
-  stat:
-    path: /etc/passwd
-  register: file_exists
-  tags:
-  - file_groupowner_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80798-2
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_groupowner_etc_passwd | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure group owner 0 on /etc/passwd
-  file:
-    path: /etc/passwd
-    group: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_groupowner_etc_passwd | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_groupowner_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80798-2
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/gshadow
-  stat:
-    path: /etc/gshadow
-  register: file_exists
-  tags:
-  - file_owner_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80802-2
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - file_owner_etc_gshadow | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - no_reboot_needed | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure owner 0 on /etc/gshadow
-  file:
-    path: /etc/gshadow
-    owner: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - file_owner_etc_gshadow | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - no_reboot_needed | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_owner_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80802-2
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Test for existence /etc/shadow
-  stat:
-    path: /etc/shadow
-  register: file_exists
-  tags:
-  - file_permissions_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80813-9
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - file_permissions_etc_shadow | bool
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure permission 0000 on /etc/shadow
-  file:
-    path: /etc/shadow
-    mode: '0000'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - file_permissions_etc_shadow | bool
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_permissions_etc_shadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80813-9
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/gshadow
-  stat:
-    path: /etc/gshadow
-  register: file_exists
-  tags:
-  - file_groupowner_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80797-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_groupowner_etc_gshadow | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure group owner 0 on /etc/gshadow
-  file:
-    path: /etc/gshadow
-    group: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_groupowner_etc_gshadow | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_groupowner_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80797-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Test for existence /etc/passwd
-  stat:
-    path: /etc/passwd
-  register: file_exists
-  tags:
-  - file_permissions_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80812-1
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - file_permissions_etc_passwd | bool
-  - low_complexity | bool
-
-- name: Ensure permission 0644 on /etc/passwd
-  file:
-    path: /etc/passwd
-    mode: '0644'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - file_permissions_etc_passwd | bool
-  - low_complexity | bool
-  tags:
-  - file_permissions_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80812-1
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/group
-  stat:
-    path: /etc/group
-  register: file_exists
-  tags:
-  - file_groupowner_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80796-6
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - file_groupowner_etc_group | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure group owner 0 on /etc/group
-  file:
-    path: /etc/group
-    group: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - file_groupowner_etc_group | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_groupowner_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80796-6
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/group
-  stat:
-    path: /etc/group
-  register: file_exists
-  tags:
-  - file_permissions_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80810-5
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - file_permissions_etc_group | bool
-  - medium_severity | bool
-  - configure_strategy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure permission 0644 on /etc/group
-  file:
-    path: /etc/group
-    mode: '0644'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - file_permissions_etc_group | bool
-  - medium_severity | bool
-  - configure_strategy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_permissions_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80810-5
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/passwd
-  stat:
-    path: /etc/passwd
-  register: file_exists
-  tags:
-  - file_owner_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80803-0
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_owner_etc_passwd | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure owner 0 on /etc/passwd
-  file:
-    path: /etc/passwd
-    owner: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - configure_strategy | bool
-  - file_owner_etc_passwd | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_owner_etc_passwd
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80803-0
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/group
-  stat:
-    path: /etc/group
-  register: file_exists
-  tags:
-  - file_owner_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80801-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-  when:
-  - file_owner_etc_group | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - no_reboot_needed | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure owner 0 on /etc/group
-  file:
-    path: /etc/group
-    owner: '0'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - file_owner_etc_group | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - no_reboot_needed | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_owner_etc_group
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80801-4
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - PCI-DSS-Req-8.7.c
-  - CJIS-5.5.2.2
-
-- name: Test for existence /etc/gshadow
-  stat:
-    path: /etc/gshadow
-  register: file_exists
-  tags:
-  - file_permissions_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80811-3
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  when:
-  - no_reboot_needed | bool
-  - medium_severity | bool
-  - configure_strategy | bool
-  - file_permissions_etc_gshadow | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure permission 0000 on /etc/gshadow
-  file:
-    path: /etc/gshadow
-    mode: '0000'
-  when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - no_reboot_needed | bool
-  - medium_severity | bool
-  - configure_strategy | bool
-  - file_permissions_etc_gshadow | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - file_permissions_etc_gshadow
-  - medium_severity
-  - configure_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80811-3
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-
-- name: Grep for yum repo section names
-  shell: grep -HEr '^\[.+\]' -r /etc/yum.repos.d/
-  register: repo_grep_results
-  ignore_errors: true
-  changed_when: false
-  tags:
-  - ensure_gpgcheck_never_disabled
-  - high_severity
-  - enable_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80792-5
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SA-12
-  - NIST-800-53-SA-12(10)
-  - NIST-800-53-CM-11(a)
-  - NIST-800-53-CM-11(b)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - ensure_gpgcheck_never_disabled | bool
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - enable_strategy | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-
-- name: Set gpgcheck=1 for each yum repo
-  ini_file:
-    path: '{{ item[0] }}'
-    section: '{{ item[1] }}'
-    option: gpgcheck
-    value: '1'
-    no_extra_spaces: true
-  loop: '{{ repo_grep_results.stdout | regex_findall( ''(.+\.repo):\[(.+)\]\n?'' ) }}'
-  tags:
-  - ensure_gpgcheck_never_disabled
-  - high_severity
-  - enable_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80792-5
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SA-12
-  - NIST-800-53-SA-12(10)
-  - NIST-800-53-CM-11(a)
-  - NIST-800-53-CM-11(b)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - ensure_gpgcheck_never_disabled | bool
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - enable_strategy | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-
-- name: Read permission of GPG key directory
-  stat:
-    path: /etc/pki/rpm-gpg/
-  register: gpg_key_directory_permission
-  check_mode: false
-  tags:
-  - ensure_redhat_gpgkey_installed
-  - high_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80795-8
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - ensure_redhat_gpgkey_installed | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Read signatures in GPG key
-  command: gpg --show-keys --with-fingerprint --with-colons "/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
-  args:
-    warn: false
-  changed_when: false
-  register: gpg_fingerprints
-  check_mode: false
-  tags:
-  - ensure_redhat_gpgkey_installed
-  - high_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80795-8
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - ensure_redhat_gpgkey_installed | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Set Fact - Installed GPG Fingerprints
-  set_fact:
-    gpg_installed_fingerprints: '{{ gpg_fingerprints.stdout | regex_findall(''^pub.*
-
-      (?:^fpr[:]*)([0-9A-Fa-f]*)'', ''\1'') | list }}'
-  tags:
-  - ensure_redhat_gpgkey_installed
-  - high_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80795-8
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - ensure_redhat_gpgkey_installed | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Set Fact - Valid fingerprints
-  set_fact:
-    gpg_valid_fingerprints: ("567E347AD0044ADE55BA8A5F199E2F91FD431D51" "6A6AA7C97C8890AEC6AEBFE2F76F66C3D4082792")
-  tags:
-  - ensure_redhat_gpgkey_installed
-  - high_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80795-8
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - ensure_redhat_gpgkey_installed | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-
-- name: Import RedHat GPG key
-  rpm_key:
-    state: present
-    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
-  when:
-  - gpg_key_directory_permission.stat.mode <= '0755'
-  - (gpg_installed_fingerprints | difference(gpg_valid_fingerprints)) | length == 0
-  - gpg_installed_fingerprints | length > 0
-  - ansible_distribution == "RedHat"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - ensure_redhat_gpgkey_installed | bool
-  - medium_complexity | bool
-  - medium_disruption | bool
-  tags:
-  - ensure_redhat_gpgkey_installed
-  - high_severity
-  - restrict_strategy
-  - medium_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80795-8
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-
-- name: Security patches are up to date
-  package:
-    name: '*'
-    state: latest
-  tags:
-  - security_patches_up_to_date
-  - high_severity
-  - skip_ansible_lint
-  - patch_strategy
-  - low_complexity
-  - high_disruption
-  - reboot_required
-  - CCE-80865-9
-  - NIST-800-53-SI-2(5)
-  - NIST-800-53-SI-2(c)
-  - NIST-800-53-CM-6(a)
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-  when:
-  - security_patches_up_to_date | bool
-  - reboot_required | bool
-  - high_severity | bool
-  - skip_ansible_lint | bool
-  - high_disruption | bool
-  - patch_strategy | bool
-  - low_complexity | bool
-
-- name: Check existence of yum on Fedora
-  stat:
-    path: /etc/yum.conf
-  register: yum_config_file
-  check_mode: false
-  when:
-  - ansible_distribution == "Fedora"
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - unknown_strategy | bool
-  - ensure_gpgcheck_globally_activated | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-  tags:
-  - ensure_gpgcheck_globally_activated
-  - high_severity
-  - unknown_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80790-9
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SA-12
-  - NIST-800-53-SA-12(10)
-  - NIST-800-53-CM-11(a)
-  - NIST-800-53-CM-11(b)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-
-- name: Ensure GPG check is globally activated (yum)
-  ini_file:
-    dest: /etc/yum.conf
-    section: main
-    option: gpgcheck
-    value: 1
-    no_extra_spaces: true
-    create: false
-  when:
-  - (ansible_distribution == "RedHat" or ansible_distribution == "CentOS" or ansible_distribution == "Scientific" or yum_config_file.stat.exists)
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - unknown_strategy | bool
-  - ensure_gpgcheck_globally_activated | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-  tags:
-  - ensure_gpgcheck_globally_activated
-  - high_severity
-  - unknown_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80790-9
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SA-12
-  - NIST-800-53-SA-12(10)
-  - NIST-800-53-CM-11(a)
-  - NIST-800-53-CM-11(b)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-
-- name: Ensure GPG check is globally activated (dnf)
-  ini_file:
-    dest: /etc/dnf/dnf.conf
-    section: main
-    option: gpgcheck
-    value: 1
-    no_extra_spaces: true
-    create: false
-  when:
-  - ansible_distribution == "Fedora"
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - unknown_strategy | bool
-  - ensure_gpgcheck_globally_activated | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-  tags:
-  - ensure_gpgcheck_globally_activated
-  - high_severity
-  - unknown_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80790-9
-  - NIST-800-53-CM-5(3)
-  - NIST-800-53-SI-7
-  - NIST-800-53-SC-12
-  - NIST-800-53-SC-12(3)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SA-12
-  - NIST-800-53-SA-12(10)
-  - NIST-800-53-CM-11(a)
-  - NIST-800-53-CM-11(b)
-  - NIST-800-171-3.4.8
-  - PCI-DSS-Req-6.2
-  - CJIS-5.10.4.1
-
-- name: Configure System Cryptography Policy
-  lineinfile:
-    path: /etc/crypto-policies/config
-    regexp: ^(?!#)(\S+)$
-    line: '{{ var_system_crypto_policy }}'
-    create: true
-  tags:
-  - configure_crypto_policy
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80935-0
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-17(2)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-MA-4(6)
-  - NIST-800-53-SC-13
-  - NIST-800-53-SC-12(2)
-  - NIST-800-53-SC-12(3)
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - configure_crypto_policy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Verify that Crypto Policy is Set (runtime)
-  command: /usr/bin/update-crypto-policies --set {{ var_system_crypto_policy }}
-  tags:
-  - configure_crypto_policy
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80935-0
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-17(2)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-MA-4(6)
-  - NIST-800-53-SC-13
-  - NIST-800-53-SC-12(2)
-  - NIST-800-53-SC-12(3)
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - configure_crypto_policy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Configure SSH to use System Crypto Policy
-  lineinfile:
-    dest: /etc/sysconfig/sshd
-    state: absent
-    regexp: ^\s*CRYPTO_POLICY.*$
-  tags:
-  - configure_ssh_crypto_policy
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - medium_disruption
-  - reboot_required
-  - CCE-80939-2
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-17(2)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-MA-4(6)
-  - NIST-800-53-SC-13
-  when:
-  - disable_strategy | bool
-  - reboot_required | bool
-  - medium_severity | bool
-  - configure_ssh_crypto_policy | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure aide is installed
-  package:
-    name: aide
-    state: present
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - package_aide_installed | bool
-  - no_reboot_needed | bool
-  - medium_severity | bool
-  - enable_strategy | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - package_aide_installed
-  - medium_severity
-  - enable_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80844-4
-  - NIST-800-53-CM-6(a)
-  - PCI-DSS-Req-11.5
-  - CJIS-5.10.1.3
-
 - name: require single user mode password
   lineinfile:
     create: true
@@ -1399,144 +25,6 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-171-3.1.1
   - NIST-800-171-3.4.5
-
-- name: Set Password Minimum Age
-  lineinfile:
-    create: true
-    dest: /etc/login.defs
-    regexp: ^#?PASS_MIN_DAYS
-    line: PASS_MIN_DAYS {{ var_accounts_minimum_age_login_defs }}
-  tags:
-  - accounts_minimum_age_login_defs
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80648-9
-  - NIST-800-53-IA-5(f)
-  - NIST-800-53-IA-5(1)(d)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.5.8
-  - CJIS-5.6.2.1.1
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - accounts_minimum_age_login_defs | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Set Password Minimum Length in login.defs
-  lineinfile:
-    dest: /etc/login.defs
-    regexp: ^PASS_MIN_LEN *[0-9]*
-    state: present
-    line: PASS_MIN_LEN        {{ var_accounts_password_minlen_login_defs }}
-    create: true
-  tags:
-  - accounts_password_minlen_login_defs
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80652-1
-  - NIST-800-53-IA-5(f)
-  - NIST-800-53-IA-5(1)(a)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.5.7
-  - CJIS-5.6.2.1
-  when:
-  - accounts_password_minlen_login_defs | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Set Password Warning Age
-  lineinfile:
-    dest: /etc/login.defs
-    regexp: ^PASS_WARN_AGE *[0-9]*
-    state: present
-    line: PASS_WARN_AGE        {{ var_accounts_password_warn_age_login_defs }}
-    create: true
-  tags:
-  - accounts_password_warn_age_login_defs
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80671-1
-  - NIST-800-53-IA-5(f)
-  - NIST-800-53-IA-5(1)(d)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.5.8
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - accounts_password_warn_age_login_defs | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Prevent Log In to Accounts With Empty Password - system-auth
-  replace:
-    dest: /etc/pam.d/system-auth
-    follow: true
-    regexp: nullok
-  tags:
-  - no_empty_passwords
-  - high_severity
-  - configure_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80841-0
-  - NIST-800-53-IA-5(1)(a)
-  - NIST-800-53-IA-5(c)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.1
-  - NIST-800-171-3.1.5
-  - PCI-DSS-Req-8.2.3
-  - CJIS-5.5.2
-  when:
-  - no_empty_passwords | bool
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - configure_strategy | bool
-  - medium_disruption | bool
-  - low_complexity | bool
-
-- name: Prevent Log In to Accounts With Empty Password - password-auth
-  replace:
-    dest: /etc/pam.d/password-auth
-    follow: true
-    regexp: nullok
-  tags:
-  - no_empty_passwords
-  - high_severity
-  - configure_strategy
-  - low_complexity
-  - medium_disruption
-  - no_reboot_needed
-  - CCE-80841-0
-  - NIST-800-53-IA-5(1)(a)
-  - NIST-800-53-IA-5(c)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.1
-  - NIST-800-171-3.1.5
-  - PCI-DSS-Req-8.2.3
-  - CJIS-5.5.2
-  when:
-  - no_empty_passwords | bool
-  - no_reboot_needed | bool
-  - high_severity | bool
-  - configure_strategy | bool
-  - medium_disruption | bool
-  - low_complexity | bool
 
 - name: Add auth pam_faillock preauth deny before pam_unix.so
   pamd:
@@ -1761,29 +249,61 @@
   - accounts_password_pam_unix_remember | bool
   - low_complexity | bool
 
-- name: Ensure PAM variable lcredit is set accordingly
+- name: Set Password Hashing Algorithm in /etc/libuser.conf
   lineinfile:
+    dest: /etc/libuser.conf
+    insertafter: ^\s*\[defaults]
+    regexp: ^#?crypt_style
+    line: crypt_style = sha512
+    state: present
     create: true
-    dest: /etc/security/pwquality.conf
-    regexp: ^#?\s*lcredit
-    line: lcredit = {{ var_password_pam_lcredit }}
   tags:
-  - accounts_password_pam_lcredit
+  - set_password_hashing_algorithm_libuserconf
   - medium_severity
   - restrict_strategy
   - low_complexity
   - low_disruption
   - no_reboot_needed
-  - CCE-80655-4
+  - CCE-80891-5
   - NIST-800-53-IA-5(c)
-  - NIST-800-53-IA-5(1)(a)
+  - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-CM-6(a)
-  - NIST-800-53-IA-5(4)
-  - PCI-DSS-Req-8.2.3
+  - NIST-800-171-3.13.11
+  - PCI-DSS-Req-8.2.1
+  - CJIS-5.6.2.2
+  when:
+  - no_reboot_needed | bool
+  - set_password_hashing_algorithm_libuserconf | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Set Password Hashing Algorithm in /etc/login.defs
+  lineinfile:
+    dest: /etc/login.defs
+    regexp: ^#?ENCRYPT_METHOD
+    line: ENCRYPT_METHOD SHA512
+    state: present
+    create: true
+  tags:
+  - set_password_hashing_algorithm_logindefs
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80892-3
+  - NIST-800-53-IA-5(c)
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.13.11
+  - PCI-DSS-Req-8.2.1
+  - CJIS-5.6.2.2
   when:
   - no_reboot_needed | bool
   - restrict_strategy | bool
-  - accounts_password_pam_lcredit | bool
+  - set_password_hashing_algorithm_logindefs | bool
   - medium_severity | bool
   - low_disruption | bool
   - low_complexity | bool
@@ -1811,59 +331,6 @@
   - no_reboot_needed | bool
   - restrict_strategy | bool
   - accounts_password_pam_difok | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure PAM variable ocredit is set accordingly
-  lineinfile:
-    create: true
-    dest: /etc/security/pwquality.conf
-    regexp: ^#?\s*ocredit
-    line: ocredit = {{ var_password_pam_ocredit }}
-  tags:
-  - accounts_password_pam_ocredit
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80663-8
-  - NIST-800-53-IA-5(c)
-  - NIST-800-53-IA-5(1)(a)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-IA-5(4)
-  when:
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - accounts_password_pam_ocredit | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-
-- name: Ensure PAM variable dcredit is set accordingly
-  lineinfile:
-    create: true
-    dest: /etc/security/pwquality.conf
-    regexp: ^#?\s*dcredit
-    line: dcredit = {{ var_password_pam_dcredit }}
-  tags:
-  - accounts_password_pam_dcredit
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80653-9
-  - NIST-800-53-IA-5(c)
-  - NIST-800-53-IA-5(1)(a)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-IA-5(4)
-  - PCI-DSS-Req-8.2.3
-  when:
-  - accounts_password_pam_dcredit | bool
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
   - medium_severity | bool
   - low_disruption | bool
   - low_complexity | bool
@@ -1947,113 +414,679 @@
   - accounts_password_pam_retry | bool
   - low_complexity | bool
 
-- name: Set Password Hashing Algorithm in /etc/libuser.conf
+- name: Ensure PAM variable lcredit is set accordingly
   lineinfile:
-    dest: /etc/libuser.conf
-    insertafter: ^\s*\[defaults]
-    regexp: ^#?crypt_style
-    line: crypt_style = sha512
-    state: present
     create: true
+    dest: /etc/security/pwquality.conf
+    regexp: ^#?\s*lcredit
+    line: lcredit = {{ var_password_pam_lcredit }}
   tags:
-  - set_password_hashing_algorithm_libuserconf
+  - accounts_password_pam_lcredit
   - medium_severity
   - restrict_strategy
   - low_complexity
   - low_disruption
   - no_reboot_needed
-  - CCE-80891-5
+  - CCE-80655-4
   - NIST-800-53-IA-5(c)
-  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.13.11
-  - PCI-DSS-Req-8.2.1
-  - CJIS-5.6.2.2
+  - NIST-800-53-IA-5(4)
+  - PCI-DSS-Req-8.2.3
   when:
   - no_reboot_needed | bool
-  - set_password_hashing_algorithm_libuserconf | bool
+  - restrict_strategy | bool
+  - accounts_password_pam_lcredit | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure PAM variable ocredit is set accordingly
+  lineinfile:
+    create: true
+    dest: /etc/security/pwquality.conf
+    regexp: ^#?\s*ocredit
+    line: ocredit = {{ var_password_pam_ocredit }}
+  tags:
+  - accounts_password_pam_ocredit
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80663-8
+  - NIST-800-53-IA-5(c)
+  - NIST-800-53-IA-5(1)(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - accounts_password_pam_ocredit | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure PAM variable dcredit is set accordingly
+  lineinfile:
+    create: true
+    dest: /etc/security/pwquality.conf
+    regexp: ^#?\s*dcredit
+    line: dcredit = {{ var_password_pam_dcredit }}
+  tags:
+  - accounts_password_pam_dcredit
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80653-9
+  - NIST-800-53-IA-5(c)
+  - NIST-800-53-IA-5(1)(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  - PCI-DSS-Req-8.2.3
+  when:
+  - accounts_password_pam_dcredit | bool
+  - no_reboot_needed | bool
   - restrict_strategy | bool
   - medium_severity | bool
   - low_disruption | bool
   - low_complexity | bool
 
-- name: Set Password Hashing Algorithm in /etc/login.defs
+- name: Prevent Log In to Accounts With Empty Password - system-auth
+  replace:
+    dest: /etc/pam.d/system-auth
+    follow: true
+    regexp: nullok
+  tags:
+  - no_empty_passwords
+  - high_severity
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80841-0
+  - NIST-800-53-IA-5(1)(a)
+  - NIST-800-53-IA-5(c)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.1
+  - NIST-800-171-3.1.5
+  - PCI-DSS-Req-8.2.3
+  - CJIS-5.5.2
+  when:
+  - no_empty_passwords | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - configure_strategy | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+
+- name: Prevent Log In to Accounts With Empty Password - password-auth
+  replace:
+    dest: /etc/pam.d/password-auth
+    follow: true
+    regexp: nullok
+  tags:
+  - no_empty_passwords
+  - high_severity
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80841-0
+  - NIST-800-53-IA-5(1)(a)
+  - NIST-800-53-IA-5(c)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.1
+  - NIST-800-171-3.1.5
+  - PCI-DSS-Req-8.2.3
+  - CJIS-5.5.2
+  when:
+  - no_empty_passwords | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - configure_strategy | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+
+- name: Set Password Minimum Length in login.defs
   lineinfile:
     dest: /etc/login.defs
-    regexp: ^#?ENCRYPT_METHOD
-    line: ENCRYPT_METHOD SHA512
+    regexp: ^PASS_MIN_LEN *[0-9]*
     state: present
+    line: PASS_MIN_LEN        {{ var_accounts_password_minlen_login_defs }}
     create: true
   tags:
-  - set_password_hashing_algorithm_logindefs
+  - accounts_password_minlen_login_defs
   - medium_severity
   - restrict_strategy
   - low_complexity
   - low_disruption
   - no_reboot_needed
-  - CCE-80892-3
-  - NIST-800-53-IA-5(c)
-  - NIST-800-53-IA-5(1)(c)
+  - CCE-80652-1
+  - NIST-800-53-IA-5(f)
+  - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.13.11
-  - PCI-DSS-Req-8.2.1
-  - CJIS-5.6.2.2
+  - NIST-800-171-3.5.7
+  - CJIS-5.6.2.1
+  when:
+  - accounts_password_minlen_login_defs | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Set Password Minimum Age
+  lineinfile:
+    create: true
+    dest: /etc/login.defs
+    regexp: ^#?PASS_MIN_DAYS
+    line: PASS_MIN_DAYS {{ var_accounts_minimum_age_login_defs }}
+  tags:
+  - accounts_minimum_age_login_defs
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80648-9
+  - NIST-800-53-IA-5(f)
+  - NIST-800-53-IA-5(1)(d)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.5.8
+  - CJIS-5.6.2.1.1
   when:
   - no_reboot_needed | bool
   - restrict_strategy | bool
-  - set_password_hashing_algorithm_logindefs | bool
+  - medium_severity | bool
+  - accounts_minimum_age_login_defs | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Set Password Warning Age
+  lineinfile:
+    dest: /etc/login.defs
+    regexp: ^PASS_WARN_AGE *[0-9]*
+    state: present
+    line: PASS_WARN_AGE        {{ var_accounts_password_warn_age_login_defs }}
+    create: true
+  tags:
+  - accounts_password_warn_age_login_defs
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80671-1
+  - NIST-800-53-IA-5(f)
+  - NIST-800-53-IA-5(1)(d)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.5.8
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - accounts_password_warn_age_login_defs | bool
   - medium_severity | bool
   - low_disruption | bool
   - low_complexity | bool
 
-- name: Test for existence /boot/grub2/grub.cfg
+- name: Security patches are up to date
+  package:
+    name: '*'
+    state: latest
+  tags:
+  - security_patches_up_to_date
+  - high_severity
+  - skip_ansible_lint
+  - patch_strategy
+  - low_complexity
+  - high_disruption
+  - reboot_required
+  - CCE-80865-9
+  - NIST-800-53-SI-2(5)
+  - NIST-800-53-SI-2(c)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - security_patches_up_to_date | bool
+  - reboot_required | bool
+  - high_severity | bool
+  - skip_ansible_lint | bool
+  - high_disruption | bool
+  - patch_strategy | bool
+  - low_complexity | bool
+
+- name: Check existence of yum on Fedora
   stat:
-    path: /boot/grub2/grub.cfg
-  register: file_exists
+    path: /etc/yum.conf
+  register: yum_config_file
+  check_mode: false
   when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - file_permissions_grub2_cfg | bool
+  - ansible_distribution == "Fedora"
   - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
+  - high_severity | bool
+  - unknown_strategy | bool
+  - ensure_gpgcheck_globally_activated | bool
+  - medium_disruption | bool
   - low_complexity | bool
   tags:
-  - file_permissions_grub2_cfg
-  - medium_severity
-  - configure_strategy
+  - ensure_gpgcheck_globally_activated
+  - high_severity
+  - unknown_strategy
   - low_complexity
-  - low_disruption
+  - medium_disruption
   - no_reboot_needed
-  - CCE-80814-7
+  - CCE-80790-9
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
   - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - NIST-800-171-3.4.5
+  - NIST-800-53-SA-12
+  - NIST-800-53-SA-12(10)
+  - NIST-800-53-CM-11(a)
+  - NIST-800-53-CM-11(b)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
 
-- name: Ensure permission 600 on /boot/grub2/grub.cfg
-  file:
-    path: /boot/grub2/grub.cfg
-    mode: '600'
+- name: Ensure GPG check is globally activated (yum)
+  ini_file:
+    dest: /etc/yum.conf
+    section: main
+    option: gpgcheck
+    value: 1
+    no_extra_spaces: true
+    create: false
   when:
-  - file_exists.stat is defined and file_exists.stat.exists
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - file_permissions_grub2_cfg | bool
+  - (ansible_distribution == "RedHat" or ansible_distribution == "CentOS" or ansible_distribution == "Scientific" or yum_config_file.stat.exists)
   - no_reboot_needed | bool
-  - configure_strategy | bool
-  - medium_severity | bool
-  - low_disruption | bool
+  - high_severity | bool
+  - unknown_strategy | bool
+  - ensure_gpgcheck_globally_activated | bool
+  - medium_disruption | bool
   - low_complexity | bool
   tags:
-  - file_permissions_grub2_cfg
-  - medium_severity
-  - configure_strategy
+  - ensure_gpgcheck_globally_activated
+  - high_severity
+  - unknown_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80790-9
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SA-12
+  - NIST-800-53-SA-12(10)
+  - NIST-800-53-CM-11(a)
+  - NIST-800-53-CM-11(b)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+
+- name: Ensure GPG check is globally activated (dnf)
+  ini_file:
+    dest: /etc/dnf/dnf.conf
+    section: main
+    option: gpgcheck
+    value: 1
+    no_extra_spaces: true
+    create: false
+  when:
+  - ansible_distribution == "Fedora"
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - unknown_strategy | bool
+  - ensure_gpgcheck_globally_activated | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+  tags:
+  - ensure_gpgcheck_globally_activated
+  - high_severity
+  - unknown_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80790-9
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SA-12
+  - NIST-800-53-SA-12(10)
+  - NIST-800-53-CM-11(a)
+  - NIST-800-53-CM-11(b)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+
+- name: Grep for yum repo section names
+  shell: grep -HEr '^\[.+\]' -r /etc/yum.repos.d/
+  register: repo_grep_results
+  ignore_errors: true
+  changed_when: false
+  tags:
+  - ensure_gpgcheck_never_disabled
+  - high_severity
+  - enable_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80792-5
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SA-12
+  - NIST-800-53-SA-12(10)
+  - NIST-800-53-CM-11(a)
+  - NIST-800-53-CM-11(b)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - ensure_gpgcheck_never_disabled | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - enable_strategy | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+
+- name: Set gpgcheck=1 for each yum repo
+  ini_file:
+    path: '{{ item[0] }}'
+    section: '{{ item[1] }}'
+    option: gpgcheck
+    value: '1'
+    no_extra_spaces: true
+  loop: '{{ repo_grep_results.stdout | regex_findall( ''(.+\.repo):\[(.+)\]\n?'' ) }}'
+  tags:
+  - ensure_gpgcheck_never_disabled
+  - high_severity
+  - enable_strategy
+  - low_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80792-5
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-SA-12
+  - NIST-800-53-SA-12(10)
+  - NIST-800-53-CM-11(a)
+  - NIST-800-53-CM-11(b)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - ensure_gpgcheck_never_disabled | bool
+  - no_reboot_needed | bool
+  - high_severity | bool
+  - enable_strategy | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+
+- name: Read permission of GPG key directory
+  stat:
+    path: /etc/pki/rpm-gpg/
+  register: gpg_key_directory_permission
+  check_mode: false
+  tags:
+  - ensure_redhat_gpgkey_installed
+  - high_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80795-8
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - ensure_redhat_gpgkey_installed | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Read signatures in GPG key
+  command: gpg --show-keys --with-fingerprint --with-colons "/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
+  args:
+    warn: false
+  changed_when: false
+  register: gpg_fingerprints
+  check_mode: false
+  tags:
+  - ensure_redhat_gpgkey_installed
+  - high_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80795-8
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - ensure_redhat_gpgkey_installed | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Set Fact - Installed GPG Fingerprints
+  set_fact:
+    gpg_installed_fingerprints: '{{ gpg_fingerprints.stdout | regex_findall(''^pub.*
+
+      (?:^fpr[:]*)([0-9A-Fa-f]*)'', ''\1'') | list }}'
+  tags:
+  - ensure_redhat_gpgkey_installed
+  - high_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80795-8
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - ensure_redhat_gpgkey_installed | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Set Fact - Valid fingerprints
+  set_fact:
+    gpg_valid_fingerprints: ("567E347AD0044ADE55BA8A5F199E2F91FD431D51" "6A6AA7C97C8890AEC6AEBFE2F76F66C3D4082792")
+  tags:
+  - ensure_redhat_gpgkey_installed
+  - high_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80795-8
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - ensure_redhat_gpgkey_installed | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Import RedHat GPG key
+  rpm_key:
+    state: present
+    key: /etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release
+  when:
+  - gpg_key_directory_permission.stat.mode <= '0755'
+  - (gpg_installed_fingerprints | difference(gpg_valid_fingerprints)) | length == 0
+  - gpg_installed_fingerprints | length > 0
+  - ansible_distribution == "RedHat"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - ensure_redhat_gpgkey_installed | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+  tags:
+  - ensure_redhat_gpgkey_installed
+  - high_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80795-8
+  - NIST-800-53-CM-5(3)
+  - NIST-800-53-SI-7
+  - NIST-800-53-SC-12
+  - NIST-800-53-SC-12(3)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.8
+  - PCI-DSS-Req-6.2
+  - CJIS-5.10.4.1
+
+- name: Configure System Cryptography Policy
+  lineinfile:
+    path: /etc/crypto-policies/config
+    regexp: ^(?!#)(\S+)$
+    line: '{{ var_system_crypto_policy }}'
+    create: true
+  tags:
+  - configure_crypto_policy
+  - high_severity
+  - restrict_strategy
   - low_complexity
   - low_disruption
   - no_reboot_needed
-  - CCE-80814-7
+  - CCE-80935-0
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-AC-17(2)
   - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-6(1)
-  - NIST-800-171-3.4.5
+  - NIST-800-53-MA-4(6)
+  - NIST-800-53-SC-13
+  - NIST-800-53-SC-12(2)
+  - NIST-800-53-SC-12(3)
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - configure_crypto_policy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Verify that Crypto Policy is Set (runtime)
+  command: /usr/bin/update-crypto-policies --set {{ var_system_crypto_policy }}
+  tags:
+  - configure_crypto_policy
+  - high_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80935-0
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-AC-17(2)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-MA-4(6)
+  - NIST-800-53-SC-13
+  - NIST-800-53-SC-12(2)
+  - NIST-800-53-SC-12(3)
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - configure_crypto_policy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Configure SSH to use System Crypto Policy
+  lineinfile:
+    dest: /etc/sysconfig/sshd
+    state: absent
+    regexp: ^\s*CRYPTO_POLICY.*$
+  tags:
+  - configure_ssh_crypto_policy
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - reboot_required
+  - CCE-80939-2
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-AC-17(2)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-MA-4(6)
+  - NIST-800-53-SC-13
+  when:
+  - disable_strategy | bool
+  - reboot_required | bool
+  - medium_severity | bool
+  - configure_ssh_crypto_policy | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure aide is installed
+  package:
+    name: aide
+    state: present
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - package_aide_installed | bool
+  - no_reboot_needed | bool
+  - medium_severity | bool
+  - enable_strategy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - package_aide_installed
+  - medium_severity
+  - enable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80844-4
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-11.5
+  - CJIS-5.10.1.3
 
 - name: Test for existence /boot/grub2/grub.cfg
   stat:
@@ -2160,6 +1193,973 @@
   - NIST-800-171-3.4.5
   - PCI-DSS-Req-7.1
   - CJIS-5.5.2.2
+
+- name: Test for existence /boot/grub2/grub.cfg
+  stat:
+    path: /boot/grub2/grub.cfg
+  register: file_exists
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - file_permissions_grub2_cfg | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_grub2_cfg
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80814-7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - NIST-800-171-3.4.5
+
+- name: Ensure permission 600 on /boot/grub2/grub.cfg
+  file:
+    path: /boot/grub2/grub.cfg
+    mode: '600'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - file_permissions_grub2_cfg | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_grub2_cfg
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80814-7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - NIST-800-171-3.4.5
+
+- name: Ensure kernel module 'sctp' is disabled
+  lineinfile:
+    create: true
+    dest: /etc/modprobe.d/sctp.conf
+    regexp: sctp
+    line: install sctp /bin/true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - reboot_required | bool
+  - medium_severity | bool
+  - kernel_module_sctp_disabled | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+  tags:
+  - kernel_module_sctp_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - reboot_required
+  - CCE-80834-5
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.6
+  - CJIS-5.10.1
+
+- name: Ensure kernel module 'dccp' is disabled
+  lineinfile:
+    create: true
+    dest: /etc/modprobe.d/dccp.conf
+    regexp: dccp
+    line: install dccp /bin/true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - kernel_module_dccp_disabled | bool
+  - disable_strategy | bool
+  - reboot_required | bool
+  - medium_severity | bool
+  - medium_disruption | bool
+  - low_complexity | bool
+  tags:
+  - kernel_module_dccp_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - medium_disruption
+  - reboot_required
+  - CCE-80833-7
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.4.6
+  - CJIS-5.10.1
+
+- name: Enable service firewalld
+  block:
+  - name: Gather the package facts
+    package_facts:
+      manager: auto
+  - name: Enable service firewalld
+    service:
+      name: firewalld
+      enabled: 'yes'
+      state: started
+    when:
+    - '"firewalld" in ansible_facts.packages'
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - service_firewalld_enabled | bool
+  - no_reboot_needed | bool
+  - medium_severity | bool
+  - enable_strategy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_firewalld_enabled
+  - medium_severity
+  - enable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80877-4
+  - NIST-800-53-AC-4
+  - NIST-800-53-CM-7(b)
+  - NIST-800-53-CA-3(5)
+  - NIST-800-53-SC-7(21)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.3
+  - NIST-800-171-3.4.7
+
+- name: Test for existence /etc/shadow
+  stat:
+    path: /etc/shadow
+  register: file_exists
+  tags:
+  - file_owner_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80804-8
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - file_owner_etc_shadow | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure owner 0 on /etc/shadow
+  file:
+    path: /etc/shadow
+    owner: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - file_owner_etc_shadow | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_owner_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80804-8
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/gshadow
+  stat:
+    path: /etc/gshadow
+  register: file_exists
+  tags:
+  - file_permissions_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80811-3
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - no_reboot_needed | bool
+  - medium_severity | bool
+  - configure_strategy | bool
+  - file_permissions_etc_gshadow | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure permission 0000 on /etc/gshadow
+  file:
+    path: /etc/gshadow
+    mode: '0000'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - medium_severity | bool
+  - configure_strategy | bool
+  - file_permissions_etc_gshadow | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80811-3
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Test for existence /etc/shadow
+  stat:
+    path: /etc/shadow
+  register: file_exists
+  tags:
+  - file_permissions_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80813-9
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - file_permissions_etc_shadow | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure permission 0000 on /etc/shadow
+  file:
+    path: /etc/shadow
+    mode: '0000'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - file_permissions_etc_shadow | bool
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80813-9
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/passwd
+  stat:
+    path: /etc/passwd
+  register: file_exists
+  tags:
+  - file_owner_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80803-0
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_owner_etc_passwd | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure owner 0 on /etc/passwd
+  file:
+    path: /etc/passwd
+    owner: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_owner_etc_passwd | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_owner_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80803-0
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/passwd
+  stat:
+    path: /etc/passwd
+  register: file_exists
+  tags:
+  - file_groupowner_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80798-2
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_groupowner_etc_passwd | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure group owner 0 on /etc/passwd
+  file:
+    path: /etc/passwd
+    group: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_groupowner_etc_passwd | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_groupowner_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80798-2
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/group
+  stat:
+    path: /etc/group
+  register: file_exists
+  tags:
+  - file_owner_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80801-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - file_owner_etc_group | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure owner 0 on /etc/group
+  file:
+    path: /etc/group
+    owner: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - file_owner_etc_group | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_owner_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80801-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/gshadow
+  stat:
+    path: /etc/gshadow
+  register: file_exists
+  tags:
+  - file_owner_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80802-2
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - file_owner_etc_gshadow | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure owner 0 on /etc/gshadow
+  file:
+    path: /etc/gshadow
+    owner: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - file_owner_etc_gshadow | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_owner_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80802-2
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Test for existence /etc/gshadow
+  stat:
+    path: /etc/gshadow
+  register: file_exists
+  tags:
+  - file_groupowner_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80797-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_groupowner_etc_gshadow | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure group owner 0 on /etc/gshadow
+  file:
+    path: /etc/gshadow
+    group: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - file_groupowner_etc_gshadow | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_groupowner_etc_gshadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80797-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Test for existence /etc/passwd
+  stat:
+    path: /etc/passwd
+  register: file_exists
+  tags:
+  - file_permissions_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80812-1
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - file_permissions_etc_passwd | bool
+  - low_complexity | bool
+
+- name: Ensure permission 0644 on /etc/passwd
+  file:
+    path: /etc/passwd
+    mode: '0644'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - file_permissions_etc_passwd | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_etc_passwd
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80812-1
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/group
+  stat:
+    path: /etc/group
+  register: file_exists
+  tags:
+  - file_groupowner_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80796-6
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - file_groupowner_etc_group | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure group owner 0 on /etc/group
+  file:
+    path: /etc/group
+    group: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - file_groupowner_etc_group | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_groupowner_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80796-6
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/shadow
+  stat:
+    path: /etc/shadow
+  register: file_exists
+  tags:
+  - file_groupowner_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80799-0
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - file_groupowner_etc_shadow | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure group owner 0 on /etc/shadow
+  file:
+    path: /etc/shadow
+    group: '0'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - configure_strategy | bool
+  - medium_severity | bool
+  - file_groupowner_etc_shadow | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_groupowner_etc_shadow
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80799-0
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Test for existence /etc/group
+  stat:
+    path: /etc/group
+  register: file_exists
+  tags:
+  - file_permissions_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80810-5
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+  when:
+  - no_reboot_needed | bool
+  - file_permissions_etc_group | bool
+  - medium_severity | bool
+  - configure_strategy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+
+- name: Ensure permission 0644 on /etc/group
+  file:
+    path: /etc/group
+    mode: '0644'
+  when:
+  - file_exists.stat is defined and file_exists.stat.exists
+  - no_reboot_needed | bool
+  - file_permissions_etc_group | bool
+  - medium_severity | bool
+  - configure_strategy | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - file_permissions_etc_group
+  - medium_severity
+  - configure_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80810-5
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  - PCI-DSS-Req-8.7.c
+  - CJIS-5.5.2.2
+
+- name: Read list of world and group writable files in libraries directories
+  command: find /lib /lib64 /usr/lib /usr/lib64 -perm /022 -type f
+  register: world_writable_library_files
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+  - file_permissions_library_dirs
+  - medium_severity
+  - restrict_strategy
+  - high_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80815-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - high_complexity | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - file_permissions_library_dirs | bool
+  - medium_disruption | bool
+
+- name: Disable world/group writability to library files
+  file:
+    path: '{{ item }}'
+    mode: go-w
+  with_items: '{{ world_writable_library_files.stdout_lines }}'
+  when:
+  - world_writable_library_files.stdout_lines | length > 0
+  - high_complexity | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - file_permissions_library_dirs | bool
+  - medium_disruption | bool
+  tags:
+  - file_permissions_library_dirs
+  - medium_severity
+  - restrict_strategy
+  - high_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80815-4
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Read list of world and group writable system executables
+  command: find /bin /usr/bin /usr/local/bin /sbin /usr/sbin /usr/local/sbin /usr/libexec -perm /022 -type f
+  register: world_writable_library_files
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+  - file_permissions_binary_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80809-7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - file_permissions_binary_dirs | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Remove world/group writability of system executables
+  file:
+    path: '{{ item }}'
+    mode: go-w
+  with_items: '{{ world_writable_library_files.stdout_lines }}'
+  when:
+  - world_writable_library_files.stdout_lines | length > 0
+  - file_permissions_binary_dirs | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+  tags:
+  - file_permissions_binary_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80809-7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Read list libraries without root ownership
+  command: find -L /usr/lib /usr/lib64 /lib /lib64 \! -user root
+  register: libraries_not_owned_by_root
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+  - file_ownership_library_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80807-1
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - file_ownership_library_dirs | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Set ownership of system libraries to root
+  file:
+    path: '{{ item }}'
+    owner: root
+  with_items: '{{ libraries_not_owned_by_root.stdout_lines }}'
+  when:
+  - libraries_not_owned_by_root | length > 0
+  - file_ownership_library_dirs | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+  tags:
+  - file_ownership_library_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80807-1
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Read list of system executables without root ownership
+  command: find /bin/ /usr/bin/ /usr/local/bin/ /sbin/ /usr/sbin/ /usr/local/sbin/ /usr/libexec \! -user root
+  register: no_root_system_executables
+  changed_when: false
+  failed_when: false
+  check_mode: false
+  tags:
+  - file_ownership_binary_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80806-3
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+  when:
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - file_ownership_binary_dirs | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+
+- name: Set ownership to root of system executables
+  file:
+    path: '{{ item }}'
+    owner: root
+  with_items: '{{ no_root_system_executables.stdout_lines }}'
+  when:
+  - no_root_system_executables.stdout_lines | length > 0
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - file_ownership_binary_dirs | bool
+  - medium_complexity | bool
+  - medium_disruption | bool
+  tags:
+  - file_ownership_binary_dirs
+  - medium_severity
+  - restrict_strategy
+  - medium_complexity
+  - medium_disruption
+  - no_reboot_needed
+  - CCE-80806-3
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-6(1)
+
+- name: Configure SELinux Policy
+  lineinfile:
+    path: /etc/sysconfig/selinux
+    regexp: ^SELINUXTYPE=
+    line: SELINUXTYPE={{ var_selinux_policy_name }}
+    create: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - selinux_policytype | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - selinux_policytype
+  - high_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80868-3
+  - NIST-800-53-AC-3
+  - NIST-800-53-AC-3(3)(a)
+  - NIST-800-53-AU-9
+  - NIST-800-53-SC-7(21)
+  - NIST-800-171-3.1.2
+  - NIST-800-171-3.7.2
+
+- name: Ensure SELinux State is Enforcing
+  lineinfile:
+    path: /etc/sysconfig/selinux
+    regexp: ^SELINUX=
+    line: SELINUX={{ var_selinux_state }}
+    create: true
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - selinux_state | bool
+  - low_complexity | bool
+  tags:
+  - selinux_state
+  - high_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80869-1
+  - NIST-800-53-AC-3
+  - NIST-800-53-AC-3(3)(a)
+  - NIST-800-53-AU-9
+  - NIST-800-53-SC-7(21)
+  - NIST-800-171-3.1.2
+  - NIST-800-171-3.7.2
 
 - name: Ensure telnet is removed
   package:
@@ -2299,171 +2299,6 @@
   - NIST-800-171-3.1.13
   - NIST-800-171-3.4.7
 
-- name: Disable service abrtd
-  block:
-  - name: Gather the service facts
-    service_facts: null
-  - name: Disable service abrtd
-    systemd:
-      name: abrtd.service
-      enabled: 'no'
-      state: stopped
-      masked: 'yes'
-    when: '"abrtd.service" in ansible_facts.services'
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - disable_strategy | bool
-  - no_reboot_needed | bool
-  - service_abrtd_disabled | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - service_abrtd_disabled
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80870-9
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-6(a)
-
-- name: Unit Socket Exists - abrtd.socket
-  command: systemctl list-unit-files abrtd.socket
-  args:
-    warn: false
-  register: socket_file_exists
-  changed_when: false
-  ignore_errors: true
-  check_mode: false
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - disable_strategy | bool
-  - no_reboot_needed | bool
-  - service_abrtd_disabled | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - service_abrtd_disabled
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80870-9
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-6(a)
-
-- name: Disable socket abrtd
-  systemd:
-    name: abrtd.socket
-    enabled: 'no'
-    state: stopped
-    masked: 'yes'
-  when:
-  - '"abrtd.socket" in socket_file_exists.stdout_lines[1]'
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - disable_strategy | bool
-  - no_reboot_needed | bool
-  - service_abrtd_disabled | bool
-  - medium_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - service_abrtd_disabled
-  - medium_severity
-  - disable_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80870-9
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-6(a)
-
-- name: Allow Only SSH Protocol 2
-  block:
-  - name: Deduplicate values from /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: false
-      regexp: (?i)^\s*Protocol\s+
-      state: absent
-  - name: Insert correct line to /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: true
-      line: Protocol 2
-      state: present
-      insertbefore: ^[#\s]*Match
-      validate: /usr/sbin/sshd -t -f %s
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - high_severity | bool
-  - sshd_allow_only_protocol2 | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - sshd_allow_only_protocol2
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80894-9
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-17(2)
-  - NIST-800-53-IA-5(1)(c)
-  - NIST-800-53-SC-13
-  - NIST-800-53-MA-4(6)
-  - NIST-800-171-3.1.13
-  - NIST-800-171-3.5.4
-  - CJIS-5.5.6
-
-- name: Disable SSH Access via Empty Passwords
-  block:
-  - name: Deduplicate values from /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: false
-      regexp: (?i)^\s*PermitEmptyPasswords\s+
-      state: absent
-  - name: Insert correct line to /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: true
-      line: PermitEmptyPasswords no
-      state: present
-      insertbefore: ^[#\s]*Match
-      validate: /usr/sbin/sshd -t -f %s
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - sshd_disable_empty_passwords | bool
-  - high_severity | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - sshd_disable_empty_passwords
-  - high_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80896-4
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-7(b)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.1
-  - NIST-800-171-3.1.5
-  - CJIS-5.5.6
-
 - name: Ensure firewalld is installed
   package:
     name: '{{ item }}'
@@ -2548,6 +2383,85 @@
   - NIST-800-53-CM-7(b)
   - NIST-800-171-3.1.12
 
+- name: Enable SSH Warning Banner
+  block:
+  - name: Deduplicate values from /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: false
+      regexp: (?i)^\s*Banner\s+
+      state: absent
+  - name: Insert correct line to /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: true
+      line: Banner /etc/issue
+      state: present
+      insertbefore: ^[#\s]*Match
+      validate: /usr/sbin/sshd -t -f %s
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - sshd_enable_warning_banner | bool
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - sshd_enable_warning_banner
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80905-3
+  - NIST-800-53-AC-8(a)
+  - NIST-800-53-AC-8(c)
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.9
+  - CJIS-5.5.6
+
+- name: Disable SSH Access via Empty Passwords
+  block:
+  - name: Deduplicate values from /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: false
+      regexp: (?i)^\s*PermitEmptyPasswords\s+
+      state: absent
+  - name: Insert correct line to /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: true
+      line: PermitEmptyPasswords no
+      state: present
+      insertbefore: ^[#\s]*Match
+      validate: /usr/sbin/sshd -t -f %s
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - sshd_disable_empty_passwords | bool
+  - high_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - sshd_disable_empty_passwords
+  - high_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80896-4
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.1
+  - NIST-800-171-3.1.5
+  - CJIS-5.5.6
+
 - name: Disable Host-Based Authentication
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
@@ -2586,85 +2500,6 @@
   - NIST-800-53-CM-7(b)
   - NIST-800-53-CM-6(a)
   - NIST-800-171-3.1.12
-  - CJIS-5.5.6
-
-- name: Do Not Allow SSH Environment Options
-  block:
-  - name: Deduplicate values from /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: false
-      regexp: (?i)^\s*PermitUserEnvironment\s+
-      state: absent
-  - name: Insert correct line to /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: true
-      line: PermitUserEnvironment no
-      state: present
-      insertbefore: ^[#\s]*Match
-      validate: /usr/sbin/sshd -t -f %s
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - sshd_do_not_permit_user_env | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - sshd_do_not_permit_user_env
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80903-8
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-CM-7(a)
-  - NIST-800-53-CM-7(b)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.12
-  - CJIS-5.5.6
-
-- name: Set SSH Client Alive Max Count
-  block:
-  - name: Deduplicate values from /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: false
-      regexp: (?i)^\s*ClientAliveCountMax\s+
-      state: absent
-  - name: Insert correct line to /etc/ssh/sshd_config
-    lineinfile:
-      path: /etc/ssh/sshd_config
-      create: true
-      line: ClientAliveCountMax {{ var_sshd_set_keepalive }}
-      state: present
-      insertbefore: ^[#\s]*Match
-      validate: /usr/sbin/sshd -t -f %s
-  when:
-  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - no_reboot_needed | bool
-  - restrict_strategy | bool
-  - medium_severity | bool
-  - sshd_set_keepalive | bool
-  - low_disruption | bool
-  - low_complexity | bool
-  tags:
-  - sshd_set_keepalive
-  - medium_severity
-  - restrict_strategy
-  - low_complexity
-  - low_disruption
-  - no_reboot_needed
-  - CCE-80907-9
-  - NIST-800-53-AC-2(5)
-  - NIST-800-53-AC-12
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-SC-10
-  - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.11
   - CJIS-5.5.6
 
 - name: Set SSH Idle Timeout Interval
@@ -2710,43 +2545,125 @@
   - PCI-DSS-Req-8.1.8
   - CJIS-5.5.6
 
-- name: Enable SSH Warning Banner
+- name: Do Not Allow SSH Environment Options
   block:
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
       create: false
-      regexp: (?i)^\s*Banner\s+
+      regexp: (?i)^\s*PermitUserEnvironment\s+
       state: absent
   - name: Insert correct line to /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
       create: true
-      line: Banner /etc/issue
+      line: PermitUserEnvironment no
       state: present
       insertbefore: ^[#\s]*Match
       validate: /usr/sbin/sshd -t -f %s
   when:
   - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
-  - sshd_enable_warning_banner | bool
   - no_reboot_needed | bool
   - restrict_strategy | bool
   - medium_severity | bool
+  - sshd_do_not_permit_user_env | bool
   - low_disruption | bool
   - low_complexity | bool
   tags:
-  - sshd_enable_warning_banner
+  - sshd_do_not_permit_user_env
   - medium_severity
   - restrict_strategy
   - low_complexity
   - low_disruption
   - no_reboot_needed
-  - CCE-80905-3
-  - NIST-800-53-AC-8(a)
-  - NIST-800-53-AC-8(c)
+  - CCE-80903-8
   - NIST-800-53-AC-17(a)
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
   - NIST-800-53-CM-6(a)
-  - NIST-800-171-3.1.9
+  - NIST-800-171-3.1.12
+  - CJIS-5.5.6
+
+- name: Allow Only SSH Protocol 2
+  block:
+  - name: Deduplicate values from /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: false
+      regexp: (?i)^\s*Protocol\s+
+      state: absent
+  - name: Insert correct line to /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: true
+      line: Protocol 2
+      state: present
+      insertbefore: ^[#\s]*Match
+      validate: /usr/sbin/sshd -t -f %s
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - high_severity | bool
+  - sshd_allow_only_protocol2 | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - sshd_allow_only_protocol2
+  - high_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80894-9
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-AC-17(2)
+  - NIST-800-53-IA-5(1)(c)
+  - NIST-800-53-SC-13
+  - NIST-800-53-MA-4(6)
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.5.4
+  - CJIS-5.5.6
+
+- name: Set SSH Client Alive Max Count
+  block:
+  - name: Deduplicate values from /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: false
+      regexp: (?i)^\s*ClientAliveCountMax\s+
+      state: absent
+  - name: Insert correct line to /etc/ssh/sshd_config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      create: true
+      line: ClientAliveCountMax {{ var_sshd_set_keepalive }}
+      state: present
+      insertbefore: ^[#\s]*Match
+      validate: /usr/sbin/sshd -t -f %s
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - no_reboot_needed | bool
+  - restrict_strategy | bool
+  - medium_severity | bool
+  - sshd_set_keepalive | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - sshd_set_keepalive
+  - medium_severity
+  - restrict_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80907-9
+  - NIST-800-53-AC-2(5)
+  - NIST-800-53-AC-12
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-SC-10
+  - NIST-800-53-CM-6(a)
+  - NIST-800-171-3.1.11
   - CJIS-5.5.6
 
 - name: Disable SSH Root Login
@@ -2792,3 +2709,86 @@
   - NIST-800-171-3.1.1
   - NIST-800-171-3.1.5
   - CJIS-5.5.6
+
+- name: Disable service abrtd
+  block:
+  - name: Gather the service facts
+    service_facts: null
+  - name: Disable service abrtd
+    systemd:
+      name: abrtd.service
+      enabled: 'no'
+      state: stopped
+      masked: 'yes'
+    when: '"abrtd.service" in ansible_facts.services'
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-6(a)
+
+- name: Unit Socket Exists - abrtd.socket
+  command: systemctl list-unit-files abrtd.socket
+  args:
+    warn: false
+  register: socket_file_exists
+  changed_when: false
+  ignore_errors: true
+  check_mode: false
+  when:
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-6(a)
+
+- name: Disable socket abrtd
+  systemd:
+    name: abrtd.socket
+    enabled: 'no'
+    state: stopped
+    masked: 'yes'
+  when:
+  - '"abrtd.socket" in socket_file_exists.stdout_lines[1]'
+  - ansible_virtualization_role != "guest" or ansible_virtualization_type != "docker"
+  - disable_strategy | bool
+  - no_reboot_needed | bool
+  - service_abrtd_disabled | bool
+  - medium_severity | bool
+  - low_disruption | bool
+  - low_complexity | bool
+  tags:
+  - service_abrtd_disabled
+  - medium_severity
+  - disable_strategy
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - CCE-80870-9
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-6(a)
