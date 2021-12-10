@@ -1,6 +1,6 @@
 galaxy_info:
   role_name: rhel8_rht_ccp
-  namespace: redhatofficial
+  namespace: RedHatOfficial
   author: ComplianceAsCode development team
   description: Red Hat Corporate Profile for Certified Cloud Providers (RH CCP)
 
