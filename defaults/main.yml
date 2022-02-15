@@ -92,4 +92,3 @@ sshd_do_not_permit_user_env: true
 sshd_enable_warning_banner: true
 sshd_set_idle_timeout: true
 sshd_set_keepalive_0: true
-unknown_strategy: true
