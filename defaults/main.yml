@@ -15,8 +15,8 @@ var_accounts_password_minlen_login_defs: '6'
 var_accounts_password_warn_age_login_defs: '7'
 var_selinux_policy_name: targeted
 var_selinux_state: enforcing
-sshd_listening_port: '22'
 sshd_idle_timeout_value: '300'
+sshd_listening_port: '22'
 accounts_minimum_age_login_defs: true
 accounts_password_minlen_login_defs: true
 accounts_password_pam_dcredit: true
@@ -57,7 +57,6 @@ file_permissions_etc_shadow: true
 file_permissions_grub2_cfg: true
 file_permissions_library_dirs: true
 firewalld_sshd_port_enabled: true
-high_complexity: true
 high_disruption: true
 high_severity: true
 kernel_module_dccp_disabled: true
