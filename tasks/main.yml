@@ -717,7 +717,7 @@
     - name: Limit Password Reuse - Ensure the required PAM module line is included in {{ pam_file_path }}
       ansible.builtin.lineinfile:
         dest: '{{ pam_file_path }}'
-        insertafter: ^password.*requisite.*pam_pwquality.so
+        insertafter: ^password.*requisite.*pam_pwquality\.so
         line: password    requisite    pam_pwhistory.so
       register: result_pam_module_add
       when:
@@ -725,9 +725,10 @@
     - name: Limit Password Reuse - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when:
-      - result_authselect_present.stat.exists
-      - (result_pam_module_add is defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed)
+      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
+        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
+
+        '
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -954,7 +955,7 @@
     - name: Limit Password Reuse - Ensure the required PAM module line is included in {{ pam_file_path }}
       ansible.builtin.lineinfile:
         dest: '{{ pam_file_path }}'
-        insertafter: ^password.*requisite.*pam_pwquality.so
+        insertafter: ^password.*requisite.*pam_pwquality\.so
         line: password    requisite    pam_pwhistory.so
       register: result_pam_module_add
       when:
@@ -962,9 +963,10 @@
     - name: Limit Password Reuse - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when:
-      - result_authselect_present.stat.exists
-      - (result_pam_module_add is defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed)
+      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
+        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
+
+        '
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -1150,7 +1152,7 @@
   - name: Lock Accounts After Failed Password Attempts - Check if pam_faillock.so is already enabled
     ansible.builtin.lineinfile:
       path: /etc/pam.d/system-auth
-      regexp: .*auth.*pam_faillock.so (preauth|authfail)
+      regexp: .*auth.*pam_faillock\.so (preauth|authfail)
       state: absent
     check_mode: true
     changed_when: false
@@ -1159,7 +1161,7 @@
     ansible.builtin.lineinfile:
       path: '{{ item }}'
       line: auth        required      pam_faillock.so preauth
-      insertbefore: ^auth.*sufficient.*pam_unix.so.*
+      insertbefore: ^auth.*sufficient.*pam_unix\.so.*
       state: present
     loop:
     - /etc/pam.d/system-auth
@@ -1170,7 +1172,7 @@
     ansible.builtin.lineinfile:
       path: '{{ item }}'
       line: auth        required      pam_faillock.so authfail
-      insertbefore: ^auth.*required.*pam_deny.so.*
+      insertbefore: ^auth.*required.*pam_deny\.so.*
       state: present
     loop:
     - /etc/pam.d/system-auth
@@ -1181,7 +1183,7 @@
     ansible.builtin.lineinfile:
       path: '{{ item }}'
       line: account     required      pam_faillock.so
-      insertbefore: ^account.*required.*pam_unix.so.*
+      insertbefore: ^account.*required.*pam_unix\.so.*
       state: present
     loop:
     - /etc/pam.d/system-auth
@@ -1569,7 +1571,7 @@
       files
     ansible.builtin.lineinfile:
       path: /etc/pam.d/system-auth
-      regexp: .*auth.*pam_faillock.so (preauth|authfail).*deny
+      regexp: .*auth.*pam_faillock\.so (preauth|authfail).*deny
       state: absent
     check_mode: true
     changed_when: false
@@ -1902,7 +1904,7 @@
   ansible.builtin.lineinfile:
     create: true
     dest: /etc/security/pwquality.conf
-    regexp: ^#?\s*retry
+    regexp: ^\s*retry
     line: retry = {{ var_password_pam_retry }}
   when:
   - DISA_STIG_RHEL_08_020104 | bool
@@ -1913,6 +1915,392 @@
   - medium_severity | bool
   - no_reboot_needed | bool
   - '"pam" in ansible_facts.packages'
+  tags:
+  - CCE-80664-6
+  - CJIS-5.5.3
+  - DISA-STIG-RHEL-08-020104
+  - NIST-800-53-AC-7(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  - accounts_password_pam_retry
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if /etc/pam.d/password-auth
+    file is present
+  ansible.builtin.stat:
+    path: /etc/pam.d/password-auth
+  register: result_pam_file_present
+  when:
+  - DISA_STIG_RHEL_08_020104 | bool
+  - accounts_password_pam_retry | bool
+  - configure_strategy | bool
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - '"pam" in ansible_facts.packages'
+  tags:
+  - CCE-80664-6
+  - CJIS-5.5.3
+  - DISA-STIG-RHEL-08-020104
+  - NIST-800-53-AC-7(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  - accounts_password_pam_retry
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check the proper
+    remediation for the system
+  block:
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the PAM
+      file to be edited as a local fact
+    ansible.builtin.set_fact:
+      pam_file_path: /etc/pam.d/password-auth
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if system
+      relies on authselect
+    ansible.builtin.stat:
+      path: /usr/bin/authselect
+    register: result_authselect_present
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Remediate using
+      authselect
+    block:
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check integrity
+        of authselect current profile
+      ansible.builtin.command:
+        cmd: authselect check
+      register: result_authselect_check_cmd
+      changed_when: false
+      ignore_errors: true
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Informative message
+        based on the authselect integrity check result
+      ansible.builtin.assert:
+        that:
+        - result_authselect_check_cmd is success
+        fail_msg:
+        - authselect integrity check failed. Remediation aborted!
+        - This remediation could not be applied because an authselect profile was not selected or the selected profile is
+          not intact.
+        - It is not recommended to manually edit the PAM files when authselect tool is available.
+        - In cases where the default authselect profile does not cover a specific demand, a custom authselect profile is recommended.
+        success_msg:
+        - authselect integrity check passed
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Get authselect
+        current profile
+      ansible.builtin.shell:
+        cmd: authselect current -r | awk '{ print $1 }'
+      register: result_authselect_profile
+      changed_when: false
+      when:
+      - result_authselect_check_cmd is success
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the current
+        authselect profile as a local fact
+      ansible.builtin.set_fact:
+        authselect_current_profile: '{{ result_authselect_profile.stdout }}'
+        authselect_custom_profile: '{{ result_authselect_profile.stdout }}'
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_profile.stdout is match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the new
+        authselect custom profile as a local fact
+      ansible.builtin.set_fact:
+        authselect_current_profile: '{{ result_authselect_profile.stdout }}'
+        authselect_custom_profile: custom/hardening
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_profile.stdout is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Get authselect
+        current features to also enable them in the custom profile
+      ansible.builtin.shell:
+        cmd: authselect current | tail -n+3 | awk '{ print $2 }'
+      register: result_authselect_features
+      changed_when: false
+      when:
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if any
+        custom profile with the same name was already created
+      ansible.builtin.stat:
+        path: /etc/authselect/{{ authselect_custom_profile }}
+      register: result_authselect_custom_profile_present
+      changed_when: false
+      when:
+      - authselect_current_profile is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Create an authselect
+        custom profile based on the current profile
+      ansible.builtin.command:
+        cmd: authselect create-profile hardening -b {{ authselect_current_profile }}
+      when:
+      - result_authselect_check_cmd is success
+      - authselect_current_profile is not match("custom/")
+      - not result_authselect_custom_profile_present.stat.exists
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+        changes are applied
+      ansible.builtin.command:
+        cmd: authselect apply-changes -b --backup=before-hardening-custom-profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+      - authselect_custom_profile is not match(authselect_current_profile)
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure the authselect
+        custom profile is selected
+      ansible.builtin.command:
+        cmd: authselect select {{ authselect_custom_profile }}
+      register: result_pam_authselect_select_profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+      - authselect_custom_profile is not match(authselect_current_profile)
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Restore the authselect
+        features in the custom profile
+      ansible.builtin.command:
+        cmd: authselect enable-feature {{ item }}
+      loop: '{{ result_authselect_features.stdout_lines }}'
+      register: result_pam_authselect_restore_features
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_features is not skipped
+      - result_pam_authselect_select_profile is not skipped
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+        changes are applied
+      ansible.builtin.command:
+        cmd: authselect apply-changes -b --backup=after-hardening-custom-profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - result_pam_authselect_restore_features is not skipped
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Change the PAM
+        file to be edited according to the custom authselect profile
+      ansible.builtin.set_fact:
+        pam_file_path: /etc/authselect/{{ authselect_custom_profile }}/{{ pam_file_path | basename }}
+    when:
+    - result_authselect_present.stat.exists
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure the "retry"
+      option from "pam_pwquality.so" is not present in {{ pam_file_path }}
+    ansible.builtin.replace:
+      dest: '{{ pam_file_path }}'
+      regexp: (.*password.*.*.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
+      replace: \1\2
+    register: result_pam_option_removal
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+      changes are applied
+    ansible.builtin.command:
+      cmd: authselect apply-changes -b
+    when:
+    - result_authselect_present.stat.exists
+    - result_pam_option_removal is changed
+  when:
+  - DISA_STIG_RHEL_08_020104 | bool
+  - accounts_password_pam_retry | bool
+  - configure_strategy | bool
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - '"pam" in ansible_facts.packages'
+  - result_pam_file_present.stat.exists
+  tags:
+  - CCE-80664-6
+  - CJIS-5.5.3
+  - DISA-STIG-RHEL-08-020104
+  - NIST-800-53-AC-7(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  - accounts_password_pam_retry
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if /etc/pam.d/system-auth
+    file is present
+  ansible.builtin.stat:
+    path: /etc/pam.d/system-auth
+  register: result_pam_file_present
+  when:
+  - DISA_STIG_RHEL_08_020104 | bool
+  - accounts_password_pam_retry | bool
+  - configure_strategy | bool
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - '"pam" in ansible_facts.packages'
+  tags:
+  - CCE-80664-6
+  - CJIS-5.5.3
+  - DISA-STIG-RHEL-08-020104
+  - NIST-800-53-AC-7(a)
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-IA-5(4)
+  - accounts_password_pam_retry
+  - configure_strategy
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+
+- name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check the proper
+    remediation for the system
+  block:
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the PAM
+      file to be edited as a local fact
+    ansible.builtin.set_fact:
+      pam_file_path: /etc/pam.d/system-auth
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if system
+      relies on authselect
+    ansible.builtin.stat:
+      path: /usr/bin/authselect
+    register: result_authselect_present
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Remediate using
+      authselect
+    block:
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check integrity
+        of authselect current profile
+      ansible.builtin.command:
+        cmd: authselect check
+      register: result_authselect_check_cmd
+      changed_when: false
+      ignore_errors: true
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Informative message
+        based on the authselect integrity check result
+      ansible.builtin.assert:
+        that:
+        - result_authselect_check_cmd is success
+        fail_msg:
+        - authselect integrity check failed. Remediation aborted!
+        - This remediation could not be applied because an authselect profile was not selected or the selected profile is
+          not intact.
+        - It is not recommended to manually edit the PAM files when authselect tool is available.
+        - In cases where the default authselect profile does not cover a specific demand, a custom authselect profile is recommended.
+        success_msg:
+        - authselect integrity check passed
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Get authselect
+        current profile
+      ansible.builtin.shell:
+        cmd: authselect current -r | awk '{ print $1 }'
+      register: result_authselect_profile
+      changed_when: false
+      when:
+      - result_authselect_check_cmd is success
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the current
+        authselect profile as a local fact
+      ansible.builtin.set_fact:
+        authselect_current_profile: '{{ result_authselect_profile.stdout }}'
+        authselect_custom_profile: '{{ result_authselect_profile.stdout }}'
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_profile.stdout is match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Define the new
+        authselect custom profile as a local fact
+      ansible.builtin.set_fact:
+        authselect_current_profile: '{{ result_authselect_profile.stdout }}'
+        authselect_custom_profile: custom/hardening
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_profile.stdout is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Get authselect
+        current features to also enable them in the custom profile
+      ansible.builtin.shell:
+        cmd: authselect current | tail -n+3 | awk '{ print $2 }'
+      register: result_authselect_features
+      changed_when: false
+      when:
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Check if any
+        custom profile with the same name was already created
+      ansible.builtin.stat:
+        path: /etc/authselect/{{ authselect_custom_profile }}
+      register: result_authselect_custom_profile_present
+      changed_when: false
+      when:
+      - authselect_current_profile is not match("custom/")
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Create an authselect
+        custom profile based on the current profile
+      ansible.builtin.command:
+        cmd: authselect create-profile hardening -b {{ authselect_current_profile }}
+      when:
+      - result_authselect_check_cmd is success
+      - authselect_current_profile is not match("custom/")
+      - not result_authselect_custom_profile_present.stat.exists
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+        changes are applied
+      ansible.builtin.command:
+        cmd: authselect apply-changes -b --backup=before-hardening-custom-profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+      - authselect_custom_profile is not match(authselect_current_profile)
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure the authselect
+        custom profile is selected
+      ansible.builtin.command:
+        cmd: authselect select {{ authselect_custom_profile }}
+      register: result_pam_authselect_select_profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - authselect_current_profile is not match("custom/")
+      - authselect_custom_profile is not match(authselect_current_profile)
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Restore the authselect
+        features in the custom profile
+      ansible.builtin.command:
+        cmd: authselect enable-feature {{ item }}
+      loop: '{{ result_authselect_features.stdout_lines }}'
+      register: result_pam_authselect_restore_features
+      when:
+      - result_authselect_profile is not skipped
+      - result_authselect_features is not skipped
+      - result_pam_authselect_select_profile is not skipped
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+        changes are applied
+      ansible.builtin.command:
+        cmd: authselect apply-changes -b --backup=after-hardening-custom-profile
+      when:
+      - result_authselect_check_cmd is success
+      - result_authselect_profile is not skipped
+      - result_pam_authselect_restore_features is not skipped
+    - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Change the PAM
+        file to be edited according to the custom authselect profile
+      ansible.builtin.set_fact:
+        pam_file_path: /etc/authselect/{{ authselect_custom_profile }}/{{ pam_file_path | basename }}
+    when:
+    - result_authselect_present.stat.exists
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure the "retry"
+      option from "pam_pwquality.so" is not present in {{ pam_file_path }}
+    ansible.builtin.replace:
+      dest: '{{ pam_file_path }}'
+      regexp: (.*password.*.*.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
+      replace: \1\2
+    register: result_pam_option_removal
+  - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
+      changes are applied
+    ansible.builtin.command:
+      cmd: authselect apply-changes -b
+    when:
+    - result_authselect_present.stat.exists
+    - result_pam_option_removal is changed
+  when:
+  - DISA_STIG_RHEL_08_020104 | bool
+  - accounts_password_pam_retry | bool
+  - configure_strategy | bool
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - '"pam" in ansible_facts.packages'
+  - result_pam_file_present.stat.exists
   tags:
   - CCE-80664-6
   - CJIS-5.5.3
@@ -2310,9 +2698,10 @@
     - name: Set PAM's Password Hashing Algorithm - password-auth - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when:
-      - result_authselect_present.stat.exists
-      - (result_pam_module_add is defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed)
+      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
+        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
+
+        '
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -2572,9 +2961,10 @@
     - name: Set PAM's Password Hashing Algorithm - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when:
-      - result_authselect_present.stat.exists
-      - (result_pam_module_add is defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed)
+      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
+        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
+
+        '
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -2897,6 +3287,30 @@
   - no_empty_passwords
   - no_reboot_needed
 
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - CCE-80800-6
+  - CJIS-5.5.2.2
+  - NIST-800-171-3.4.5
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-7.1
+  - configure_strategy
+  - file_groupowner_grub2_cfg
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  when:
+  - configure_strategy | bool
+  - file_groupowner_grub2_cfg | bool
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+
 - name: Test for existence /boot/grub2/grub.cfg
   stat:
     path: /boot/grub2/grub.cfg
@@ -2908,6 +3322,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80800-6
@@ -2934,6 +3350,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -2950,6 +3368,30 @@
   - medium_severity
   - no_reboot_needed
 
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - CCE-80805-5
+  - CJIS-5.5.2.2
+  - NIST-800-171-3.4.5
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-7.1
+  - configure_strategy
+  - file_owner_grub2_cfg
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  when:
+  - configure_strategy | bool
+  - file_owner_grub2_cfg | bool
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+
 - name: Test for existence /boot/grub2/grub.cfg
   stat:
     path: /boot/grub2/grub.cfg
@@ -2961,6 +3403,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80805-5
@@ -2987,6 +3431,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -3003,6 +3449,28 @@
   - medium_severity
   - no_reboot_needed
 
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - CCE-80814-7
+  - NIST-800-171-3.4.5
+  - NIST-800-53-AC-6(1)
+  - NIST-800-53-CM-6(a)
+  - configure_strategy
+  - file_permissions_grub2_cfg
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+  when:
+  - configure_strategy | bool
+  - file_permissions_grub2_cfg | bool
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+
 - name: Test for existence /boot/grub2/grub.cfg
   stat:
     path: /boot/grub2/grub.cfg
@@ -3014,6 +3482,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80814-7
@@ -3038,6 +3508,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
+  - '"grub2-common" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -4699,6 +5171,7 @@
       insertbefore: ^[#\s]*Match
       validate: /usr/sbin/sshd -t -f %s
   when:
+  - DISA_STIG_RHEL_08_010200 | bool
   - low_complexity | bool
   - low_disruption | bool
   - medium_severity | bool
@@ -4709,6 +5182,7 @@
   tags:
   - CCE-83405-1
   - CJIS-5.5.6
+  - DISA-STIG-RHEL-08-010200
   - NIST-800-171-3.1.11
   - NIST-800-53-AC-12
   - NIST-800-53-AC-17(a)
@@ -4751,6 +5225,7 @@
       insertbefore: ^[#\s]*Match
       validate: /usr/sbin/sshd -t -f %s
   when:
+  - DISA_STIG_RHEL_08_010201 | bool
   - low_complexity | bool
   - low_disruption | bool
   - medium_severity | bool
@@ -4761,6 +5236,7 @@
   tags:
   - CCE-80906-1
   - CJIS-5.5.6
+  - DISA-STIG-RHEL-08-010201
   - NIST-800-171-3.1.11
   - NIST-800-53-AC-12
   - NIST-800-53-AC-17(a)
