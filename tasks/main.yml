@@ -95,6 +95,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-MA-4(6)
   - NIST-800-53-SC-13
+  - PCI-DSS-Req-2.2
   - configure_ssh_crypto_policy
   - disable_strategy
   - low_complexity
@@ -290,8 +291,6 @@
 
 - name: Read signatures in GPG key
   command: gpg --show-keys --with-fingerprint --with-colons "/etc/pki/rpm-gpg/RPM-GPG-KEY-redhat-release"
-  args:
-    warn: false
   changed_when: false
   register: gpg_fingerprints
   check_mode: false
@@ -463,8 +462,6 @@
     cmd: rpm -qV pam
   register: result_altered_authselect
   ignore_errors: true
-  args:
-    warn: false
   when:
   - configure_strategy | bool
   - enable_authselect | bool
@@ -3060,6 +3057,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
+  - PCI-DSS-Req-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3098,6 +3096,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
+  - PCI-DSS-Req-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3114,6 +3113,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
+  - PCI-DSS-Req-8.3.9
   - accounts_password_warn_age_login_defs
   - low_complexity
   - low_disruption
@@ -3149,6 +3149,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
+  - PCI-DSS-Req-8.3.9
   - accounts_password_warn_age_login_defs
   - low_complexity
   - low_disruption
@@ -3322,8 +3323,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80800-6
@@ -3350,8 +3351,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -3403,8 +3404,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80805-5
@@ -3431,8 +3432,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -3482,8 +3483,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80814-7
@@ -3508,8 +3509,8 @@
   - low_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - '"grub2-common" in ansible_facts.packages'
+  - '"/boot/efi" not in ansible_mounts | map(attribute="mount") | list'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   - file_exists.stat is defined and file_exists.stat.exists
   tags:
@@ -3584,6 +3585,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-1.4.2
   - disable_strategy
   - kernel_module_dccp_disabled
   - low_complexity
@@ -3612,6 +3614,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-1.4.2
   - disable_strategy
   - kernel_module_dccp_disabled
   - low_complexity
@@ -3642,6 +3645,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-1.4.2
   - disable_strategy
   - kernel_module_sctp_disabled
   - low_complexity
@@ -3672,6 +3676,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-1.4.2
   - disable_strategy
   - kernel_module_sctp_disabled
   - low_complexity
@@ -4900,9 +4905,9 @@
       state: present
   when:
   - DISA_STIG_RHEL_08_010170 | bool
+  - high_severity | bool
   - low_complexity | bool
   - low_disruption | bool
-  - medium_severity | bool
   - no_reboot_needed | bool
   - restrict_strategy | bool
   - selinux_state | bool
@@ -4916,9 +4921,9 @@
   - NIST-800-53-AC-3(3)(a)
   - NIST-800-53-AU-9
   - NIST-800-53-SC-7(21)
+  - high_severity
   - low_complexity
   - low_disruption
-  - medium_severity
   - no_reboot_needed
   - restrict_strategy
   - selinux_state
@@ -4953,8 +4958,6 @@
 
 - name: Unit Socket Exists - abrtd.socket
   command: systemctl list-unit-files abrtd.socket
-  args:
-    warn: false
   register: socket_file_exists
   changed_when: false
   ignore_errors: true
@@ -5014,6 +5017,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-2.2.4
   - disable_strategy
   - high_severity
   - low_complexity
@@ -5084,8 +5088,6 @@
 
 - name: Unit Socket Exists - telnet.socket
   command: systemctl list-unit-files telnet.socket
-  args:
-    warn: false
   register: socket_file_exists
   changed_when: false
   ignore_errors: true
@@ -5171,7 +5173,6 @@
       insertbefore: ^[#\s]*Match
       validate: /usr/sbin/sshd -t -f %s
   when:
-  - DISA_STIG_RHEL_08_010200 | bool
   - low_complexity | bool
   - low_disruption | bool
   - medium_severity | bool
@@ -5182,7 +5183,6 @@
   tags:
   - CCE-83405-1
   - CJIS-5.5.6
-  - DISA-STIG-RHEL-08-010200
   - NIST-800-171-3.1.11
   - NIST-800-53-AC-12
   - NIST-800-53-AC-17(a)
@@ -5197,7 +5197,7 @@
   - restrict_strategy
   - sshd_set_keepalive_0
 
-- name: Set SSH Idle Timeout Interval
+- name: Set SSH Client Alive Interval
   block:
   - name: Check for duplicate values
     lineinfile:
@@ -5304,12 +5304,13 @@
   - no_reboot_needed
   - restrict_strategy
 
-- name: Ensure firewalld is installed
-  package:
+- name: Enable SSH Server firewalld Firewall Exception - Ensure firewalld and NetworkManager packages are installed
+  ansible.builtin.package:
     name: '{{ item }}'
     state: present
   with_items:
   - firewalld
+  - NetworkManager
   when:
   - configure_strategy | bool
   - firewalld_sshd_port_enabled | bool
@@ -5332,11 +5333,9 @@
   - medium_severity
   - no_reboot_needed
 
-- name: Enable SSHD in firewalld (custom port)
-  firewalld:
-    port: '{{ sshd_listening_port }}/tcp'
-    permanent: true
-    state: enabled
+- name: Enable SSH Server firewalld Firewall Exception - Collect facts about system services
+  ansible.builtin.service_facts: null
+  register: result_services_states
   when:
   - configure_strategy | bool
   - firewalld_sshd_port_enabled | bool
@@ -5345,7 +5344,6 @@
   - medium_severity | bool
   - no_reboot_needed | bool
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
-  - sshd_listening_port != 22
   tags:
   - CCE-80820-4
   - NIST-800-171-3.1.12
@@ -5360,11 +5358,55 @@
   - medium_severity
   - no_reboot_needed
 
-- name: Enable SSHD in firewalld (default port)
-  firewalld:
-    service: ssh
-    permanent: true
-    state: enabled
+- name: Enable SSH Server firewalld Firewall Exception - Remediation is applicable if firewalld and NetworkManager services
+    are running
+  block:
+  - name: Enable SSH Server firewalld Firewall Exception - Collect NetworkManager connections names
+    ansible.builtin.shell:
+      cmd: nmcli -f UUID,TYPE con | grep ethernet | awk '{ print $1 }'
+    register: result_nmcli_cmd_connections_names
+    changed_when: false
+  - name: Enable SSH Server firewalld Firewall Exception - Collect NetworkManager connections zones
+    ansible.builtin.shell:
+      cmd: nmcli -f connection.zone connection show {{ item | trim }} | awk '{ print $2}'
+    register: result_nmcli_cmd_connections_zones
+    changed_when: false
+    with_items:
+    - '{{ result_nmcli_cmd_connections_names.stdout_lines }}'
+  - name: Enable SSH Server firewalld Firewall Exception - Ensure NetworkManager connections are assigned to a firewalld zone
+    ansible.builtin.command:
+      cmd: nmcli connection modify {{ item.0 }} connection.zone {{ firewalld_sshd_zone }}
+    register: result_nmcli_cmd_connections_assignment
+    with_together:
+    - '{{ result_nmcli_cmd_connections_names.stdout_lines }}'
+    - '{{ result_nmcli_cmd_connections_zones.results }}'
+    when:
+    - item.1.stdout == '--'
+  - name: Enable SSH Server firewalld Firewall Exception - Ensure NetworkManager connections changes are applied
+    ansible.builtin.service:
+      name: NetworkManager
+      state: restarted
+    when:
+    - result_nmcli_cmd_connections_assignment is changed
+  - name: Enable SSH Server firewalld Firewall Exception - Collect firewalld active zones
+    ansible.builtin.shell:
+      cmd: firewall-cmd --get-active-zones | grep -v interfaces
+    register: result_firewall_cmd_zones_names
+    changed_when: false
+  - name: Enable SSH Server firewalld Firewall Exception - Ensure firewalld zones allow SSH
+    ansible.builtin.command:
+      cmd: firewall-cmd --permanent --zone={{ item }} --add-service=ssh
+    register: result_nmcli_cmd_connections_assignment
+    changed_when:
+    - '''ALREADY_ENABLED'' not in result_nmcli_cmd_connections_assignment.stderr'
+    with_items:
+    - '{{ result_firewall_cmd_zones_names.stdout_lines }}'
+  - name: Enable SSH Server firewalld Firewall Exception - Ensure firewalld changes are applied
+    ansible.builtin.service:
+      name: firewalld
+      state: reloaded
+    when:
+    - result_nmcli_cmd_connections_assignment is changed
   when:
   - configure_strategy | bool
   - firewalld_sshd_port_enabled | bool
@@ -5373,7 +5415,41 @@
   - medium_severity | bool
   - no_reboot_needed | bool
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
-  - sshd_listening_port == 22
+  - ansible_facts.services['firewalld.service'].state == 'running'
+  - ansible_facts.services['NetworkManager.service'].state == 'running'
+  tags:
+  - CCE-80820-4
+  - NIST-800-171-3.1.12
+  - NIST-800-53-AC-17(a)
+  - NIST-800-53-CM-6(b)
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - configure_strategy
+  - firewalld_sshd_port_enabled
+  - low_complexity
+  - low_disruption
+  - medium_severity
+  - no_reboot_needed
+
+- name: Enable SSH Server firewalld Firewall Exception - Informative message based on services states
+  ansible.builtin.assert:
+    that:
+    - ansible_facts.services['firewalld.service'].state == 'running'
+    - ansible_facts.services['NetworkManager.service'].state == 'running'
+    fail_msg:
+    - firewalld and NetworkManager services are not active. Remediation aborted!
+    - This remediation could not be applied because it depends on firewalld and NetworkManager services running.
+    - The service is not started by this remediation in order to prevent connection issues.
+    success_msg:
+    - Enable SSH Server firewalld Firewall Exception remediation successfully executed
+  when:
+  - configure_strategy | bool
+  - firewalld_sshd_port_enabled | bool
+  - low_complexity | bool
+  - low_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
   tags:
   - CCE-80820-4
   - NIST-800-171-3.1.12
@@ -5487,6 +5563,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-2.2.6
   - high_severity
   - low_complexity
   - low_disruption
@@ -5543,6 +5620,7 @@
   - NIST-800-53-CM-7(b)
   - NIST-800-53-IA-2
   - NIST-800-53-IA-2(5)
+  - PCI-DSS-Req-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
@@ -5595,6 +5673,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSS-Req-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
@@ -5647,6 +5726,7 @@
   - NIST-800-53-AC-8(a)
   - NIST-800-53-AC-8(c)
   - NIST-800-53-CM-6(a)
+  - PCI-DSS-Req-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
