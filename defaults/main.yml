@@ -16,7 +16,7 @@ var_accounts_password_warn_age_login_defs: '7'
 var_selinux_policy_name: targeted
 var_selinux_state: enforcing
 sshd_idle_timeout_value: '300'
-sshd_listening_port: '22'
+firewalld_sshd_zone: public
 DISA_STIG_RHEL_08_010010: true
 DISA_STIG_RHEL_08_010020: true
 DISA_STIG_RHEL_08_010040: true
@@ -25,7 +25,6 @@ DISA_STIG_RHEL_08_010151: true
 DISA_STIG_RHEL_08_010159: true
 DISA_STIG_RHEL_08_010160: true
 DISA_STIG_RHEL_08_010170: true
-DISA_STIG_RHEL_08_010200: true
 DISA_STIG_RHEL_08_010201: true
 DISA_STIG_RHEL_08_010287: true
 DISA_STIG_RHEL_08_010300: true
