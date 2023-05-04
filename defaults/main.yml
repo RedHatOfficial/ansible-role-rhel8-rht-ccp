@@ -11,7 +11,6 @@ var_password_pam_ocredit: '-2'
 var_password_pam_retry: '3'
 var_password_pam_ucredit: '-2'
 var_password_hashing_algorithm: SHA512
-var_logind_session_timeout: '300'
 var_accounts_minimum_age_login_defs: '7'
 var_accounts_password_warn_age_login_defs: '7'
 var_selinux_policy_name: targeted
@@ -96,7 +95,6 @@ high_disruption: true
 high_severity: true
 kernel_module_dccp_disabled: true
 kernel_module_sctp_disabled: true
-logind_session_timeout: true
 low_complexity: true
 low_disruption: true
 low_severity: true
