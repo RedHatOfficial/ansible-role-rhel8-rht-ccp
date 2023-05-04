@@ -3239,40 +3239,6 @@
   - no_reboot_needed
   - set_password_hashing_algorithm_systemauth
 
-- name: Set 'StopIdleSessionSec' to '{{ var_logind_session_timeout }}' in the [Login] section of '/etc/systemd/logind.conf'
-  ini_file:
-    path: /etc/systemd/logind.conf
-    section: Login
-    option: StopIdleSessionSec
-    value: '{{ var_logind_session_timeout }}'
-    create: true
-    mode: 420
-  tags:
-  - CCE-90784-0
-  - CJIS-5.5.6
-  - NIST-800-171-3.1.11
-  - NIST-800-53-AC-12
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-17(a)
-  - NIST-800-53-AC-2(5)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-CM-6(a)
-  - NIST-800-53-SC-10
-  - PCI-DSS-Req-8.1.8
-  - logind_session_timeout
-  - low_complexity
-  - low_disruption
-  - medium_severity
-  - reboot_required
-  - restrict_strategy
-  when:
-  - logind_session_timeout | bool
-  - low_complexity | bool
-  - low_disruption | bool
-  - medium_severity | bool
-  - reboot_required | bool
-  - restrict_strategy | bool
-
 - name: require single user mode password
   lineinfile:
     create: true
@@ -4003,7 +3969,7 @@
   lineinfile:
     create: true
     dest: /etc/modprobe.d/dccp.conf
-    regexp: dccp
+    regexp: install\s+dccp
     line: install dccp /bin/true
   when:
   - disable_strategy | bool
@@ -4061,7 +4027,7 @@
   lineinfile:
     create: true
     dest: /etc/modprobe.d/sctp.conf
-    regexp: sctp
+    regexp: install\s+sctp
     line: install sctp /bin/true
   when:
   - DISA_STIG_RHEL_08_040023 | bool
@@ -4980,7 +4946,8 @@
   - no_reboot_needed | bool
 
 - name: Read list of world and group writable system executables
-  command: find /bin /usr/bin /usr/local/bin /sbin /usr/sbin /usr/local/sbin /usr/libexec -perm /022 -type f
+  ansible.builtin.command: find /bin /usr/bin /usr/local/bin /sbin /usr/sbin /usr/local/sbin /usr/libexec -perm /022 -type
+    f
   register: world_writable_library_files
   changed_when: false
   failed_when: false
@@ -5008,9 +4975,10 @@
   - restrict_strategy | bool
 
 - name: Remove world/group writability of system executables
-  file:
+  ansible.builtin.file:
     path: '{{ item }}'
     mode: go-w
+    state: file
   with_items: '{{ world_writable_library_files.stdout_lines }}'
   when:
   - DISA_STIG_RHEL_08_010300 | bool
