@@ -103,6 +103,7 @@ medium_disruption: true
 medium_severity: true
 no_empty_passwords: true
 no_reboot_needed: true
+no_shelllogin_for_systemaccounts: true
 package_aide_installed: true
 package_telnet_removed: true
 package_telnet_server_removed: true
