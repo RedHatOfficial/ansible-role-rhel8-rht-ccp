@@ -17,6 +17,7 @@
   - DISA-STIG-RHEL-08-010359
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-11.5
+  - PCI-DSSv4-11.5.2
   - enable_strategy
   - low_complexity
   - low_disruption
@@ -96,6 +97,7 @@
   - NIST-800-53-MA-4(6)
   - NIST-800-53-SC-13
   - PCI-DSS-Req-2.2
+  - PCI-DSSv4-2.2
   - configure_ssh_crypto_policy
   - disable_strategy
   - low_complexity
@@ -129,6 +131,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - configure_strategy
   - ensure_gpgcheck_globally_activated
   - high_severity
@@ -176,6 +179,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - configure_strategy
   - ensure_gpgcheck_globally_activated
   - high_severity
@@ -190,7 +194,7 @@
 
     '
   register: repo_grep_results
-  ignore_errors: true
+  failed_when: repo_grep_results.rc not in [0, 1]
   changed_when: false
   tags:
   - CCE-80792-5
@@ -207,6 +211,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - enable_strategy
   - ensure_gpgcheck_never_disabled
   - high_severity
@@ -245,6 +250,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - enable_strategy
   - ensure_gpgcheck_never_disabled
   - high_severity
@@ -418,6 +424,7 @@
   - NIST-800-53-SI-2(5)
   - NIST-800-53-SI-2(c)
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - high_disruption
   - low_complexity
   - medium_severity
@@ -435,11 +442,11 @@
   - security_patches_up_to_date | bool
   - skip_ansible_lint | bool
 
-- name: Select authselect profile
+- name: Enable authselect - Select authselect profile
   ansible.builtin.command:
     cmd: authselect select "{{ var_authselect_profile }}"
-  ignore_errors: true
   register: result_authselect_select
+  failed_when: false
   tags:
   - CCE-88248-0
   - NIST-800-53-AC-3
@@ -457,11 +464,11 @@
   - medium_severity | bool
   - no_reboot_needed | bool
 
-- name: Verify if PAM has been altered
+- name: Enable authselect - Verify if PAM has been altered
   ansible.builtin.command:
     cmd: rpm -qV pam
   register: result_altered_authselect
-  ignore_errors: true
+  failed_when: false
   when:
   - configure_strategy | bool
   - enable_authselect | bool
@@ -469,7 +476,7 @@
   - medium_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - result_authselect_select is failed
+  - result_authselect_select.rc != 0
   tags:
   - CCE-88248-0
   - NIST-800-53-AC-3
@@ -480,10 +487,10 @@
   - medium_severity
   - no_reboot_needed
 
-- name: Informative message based on the authselect integrity check
+- name: Enable authselect - Informative message based on the authselect integrity check
   ansible.builtin.assert:
     that:
-    - result_altered_authselect is success
+    - result_altered_authselect is skipped or result_altered_authselect.rc == 0
     fail_msg:
     - Files in the 'pam' package have been altered, so the authselect configuration won't be forced.
   tags:
@@ -503,7 +510,7 @@
   - medium_severity | bool
   - no_reboot_needed | bool
 
-- name: Force authselect profile select
+- name: Enable authselect - Force authselect profile select
   ansible.builtin.command:
     cmd: authselect select --force "{{ var_authselect_profile }}"
   when:
@@ -513,8 +520,8 @@
   - medium_disruption | bool
   - medium_severity | bool
   - no_reboot_needed | bool
-  - result_altered_authselect is success
-  - result_authselect_select is failed
+  - result_authselect_select.rc != 0
+  - result_altered_authselect is skipped or result_altered_authselect.rc == 0
   tags:
   - CCE-88248-0
   - NIST-800-53-AC-3
@@ -535,6 +542,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -568,6 +576,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -596,6 +605,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -610,11 +620,11 @@
       cmd: authselect check
     register: result_authselect_check_cmd
     changed_when: false
-    ignore_errors: true
+    failed_when: false
   - name: Limit Password Reuse - Informative message based on the authselect integrity check result
     ansible.builtin.assert:
       that:
-      - result_authselect_check_cmd is success
+      - result_authselect_check_cmd.rc == 0
       fail_msg:
       - authselect integrity check failed. Remediation aborted!
       - This remediation could not be applied because an authselect profile was not selected or the selected profile is not
@@ -660,6 +670,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -683,11 +694,11 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Limit Password Reuse - Informative message based on the authselect integrity check result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -814,10 +825,11 @@
     - name: Limit Password Reuse - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
-        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
-
-        '
+      when:
+      - result_authselect_present is defined
+      - result_authselect_present.stat.exists
+      - "(result_pam_module_add is defined and result_pam_module_add.changed)\n or (result_pam_module_edit is defined and\
+        \ result_pam_module_edit.changed)"
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -840,6 +852,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -866,6 +879,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -903,11 +917,11 @@
             cmd: authselect check
           register: result_authselect_check_cmd
           changed_when: false
-          ignore_errors: true
+          failed_when: false
         - name: Limit Password Reuse - Informative message based on the authselect integrity check result
           ansible.builtin.assert:
             that:
-            - result_authselect_check_cmd is success
+            - result_authselect_check_cmd.rc == 0
             fail_msg:
             - authselect integrity check failed. Remediation aborted!
             - This remediation could not be applied because an authselect profile was not selected or the selected profile
@@ -1029,6 +1043,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -1052,11 +1067,11 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Limit Password Reuse - Informative message based on the authselect integrity check result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -1182,10 +1197,11 @@
     - name: Limit Password Reuse - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
-        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
-
-        '
+      when:
+      - result_authselect_present is defined
+      - result_authselect_present.stat.exists
+      - "(result_pam_module_add is defined and result_pam_module_add.changed)\n or (result_pam_module_edit is defined and\
+        \ result_pam_module_edit.changed)"
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -1240,6 +1256,7 @@
   - NIST-800-53-IA-5(1)(e)
   - NIST-800-53-IA-5(f)
   - PCI-DSS-Req-8.2.5
+  - PCI-DSSv4-8.3.7
   - accounts_password_pam_unix_remember
   - configure_strategy
   - low_complexity
@@ -1258,6 +1275,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1294,6 +1312,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1308,11 +1327,11 @@
       cmd: authselect check
     register: result_authselect_check_cmd
     changed_when: false
-    ignore_errors: true
+    failed_when: false
   - name: Lock Accounts After Failed Password Attempts - Informative message based on the authselect integrity check result
     ansible.builtin.assert:
       that:
-      - result_authselect_check_cmd is success
+      - result_authselect_check_cmd.rc == 0
       fail_msg:
       - authselect integrity check failed. Remediation aborted!
       - This remediation could not be applied because an authselect profile was not selected or the selected profile is not
@@ -1359,6 +1378,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1427,6 +1447,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1455,6 +1476,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1486,6 +1508,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1515,11 +1538,11 @@
           cmd: authselect check
         register: result_authselect_check_cmd
         changed_when: false
-        ignore_errors: true
+        failed_when: false
       - name: Lock Accounts After Failed Password Attempts - Informative message based on the authselect integrity check result
         ansible.builtin.assert:
           that:
-          - result_authselect_check_cmd is success
+          - result_authselect_check_cmd.rc == 0
           fail_msg:
           - authselect integrity check failed. Remediation aborted!
           - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -1647,11 +1670,11 @@
           cmd: authselect check
         register: result_authselect_check_cmd
         changed_when: false
-        ignore_errors: true
+        failed_when: false
       - name: Lock Accounts After Failed Password Attempts - Informative message based on the authselect integrity check result
         ansible.builtin.assert:
           that:
-          - result_authselect_check_cmd is success
+          - result_authselect_check_cmd.rc == 0
           fail_msg:
           - authselect integrity check failed. Remediation aborted!
           - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -1777,6 +1800,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1865,6 +1889,7 @@
   - NIST-800-53-AC-7(a)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.1.6
+  - PCI-DSSv4-8.3.4
   - accounts_passwords_pam_faillock_deny
   - low_complexity
   - low_disruption
@@ -1883,6 +1908,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_dcredit
   - low_complexity
   - low_disruption
@@ -1921,6 +1948,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_dcredit
   - low_complexity
   - low_disruption
@@ -1995,6 +2024,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_lcredit
   - low_complexity
   - low_disruption
@@ -2033,6 +2064,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_lcredit
   - low_complexity
   - low_disruption
@@ -2197,12 +2230,12 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Informative message
         based on the authselect integrity check result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -2390,12 +2423,12 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Informative message
         based on the authselect integrity check result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -2545,6 +2578,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_ucredit
   - low_complexity
   - low_disruption
@@ -2583,6 +2618,8 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - accounts_password_pam_ucredit
   - low_complexity
   - low_disruption
@@ -2601,6 +2638,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - low_complexity
   - low_disruption
   - medium_severity
@@ -2639,6 +2677,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - low_complexity
   - low_disruption
   - medium_severity
@@ -2658,6 +2697,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - low_complexity
   - low_disruption
   - medium_severity
@@ -2698,6 +2738,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - low_complexity
   - low_disruption
   - medium_severity
@@ -2778,12 +2819,12 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Set PAM's Password Hashing Algorithm - password-auth - Informative message based on the authselect integrity check
         result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -2918,10 +2959,11 @@
     - name: Set PAM's Password Hashing Algorithm - password-auth - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
-        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
-
-        '
+      when:
+      - result_authselect_present is defined
+      - result_authselect_present.stat.exists
+      - "(result_pam_module_add is defined and result_pam_module_add.changed)\n or (result_pam_module_edit is defined and\
+        \ result_pam_module_edit.changed)"
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -2950,7 +2992,7 @@
       cmd: authselect apply-changes -b
     when:
     - result_authselect_present.stat.exists
-    - (result_pam_sha512_add is defined and result_pam_sha512_add.changed) or (result_pam_sha512_edit is defined and result_pam_sha512_edit.changed)
+    - "(result_pam_sha512_add is defined and result_pam_sha512_add.changed)\n or (result_pam_sha512_edit is defined and result_pam_sha512_edit.changed)"
   when:
   - DISA_STIG_RHEL_08_010160 | bool
   - configure_strategy | bool
@@ -2989,6 +3031,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - configure_strategy
   - low_complexity
   - medium_disruption
@@ -3026,6 +3069,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - configure_strategy
   - low_complexity
   - medium_disruption
@@ -3049,11 +3093,11 @@
         cmd: authselect check
       register: result_authselect_check_cmd
       changed_when: false
-      ignore_errors: true
+      failed_when: false
     - name: Set PAM's Password Hashing Algorithm - Informative message based on the authselect integrity check result
       ansible.builtin.assert:
         that:
-        - result_authselect_check_cmd is success
+        - result_authselect_check_cmd.rc == 0
         fail_msg:
         - authselect integrity check failed. Remediation aborted!
         - This remediation could not be applied because an authselect profile was not selected or the selected profile is
@@ -3181,10 +3225,11 @@
     - name: Set PAM's Password Hashing Algorithm - Ensure authselect changes are applied
       ansible.builtin.command:
         cmd: authselect apply-changes -b
-      when: 'result_authselect_present is defined and result_authselect_present.stat.exists and ((result_pam_module_add is
-        defined and result_pam_module_add.changed) or (result_pam_module_edit is defined and result_pam_module_edit.changed))
-
-        '
+      when:
+      - result_authselect_present is defined
+      - result_authselect_present.stat.exists
+      - "(result_pam_module_add is defined and result_pam_module_add.changed)\n or (result_pam_module_edit is defined and\
+        \ result_pam_module_edit.changed)"
     when:
     - result_pam_line_present.found is defined
     - result_pam_line_present.found == 0
@@ -3212,7 +3257,7 @@
       cmd: authselect apply-changes -b
     when:
     - result_authselect_present.stat.exists
-    - (result_pam_sha512_add is defined and result_pam_sha512_add.changed) or (result_pam_sha512_edit is defined and result_pam_sha512_edit.changed)
+    - "(result_pam_sha512_add is defined and result_pam_sha512_add.changed)\n or (result_pam_sha512_edit is defined and result_pam_sha512_edit.changed)"
   when:
   - DISA_STIG_RHEL_08_010159 | bool
   - configure_strategy | bool
@@ -3232,6 +3277,7 @@
   - NIST-800-53-IA-5(1)(c)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.1
+  - PCI-DSSv4-8.3.2
   - configure_strategy
   - low_complexity
   - medium_disruption
@@ -3239,7 +3285,7 @@
   - no_reboot_needed
   - set_password_hashing_algorithm_systemauth
 
-- name: require single user mode password
+- name: Require single user mode password
   lineinfile:
     create: true
     dest: /usr/lib/systemd/system/rescue.service
@@ -3280,7 +3326,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSS-Req-8.3.9
+  - PCI-DSSv4-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3319,7 +3365,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSS-Req-8.3.9
+  - PCI-DSSv4-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3336,7 +3382,8 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSS-Req-8.3.9
+  - PCI-DSS-Req-8.2.4
+  - PCI-DSSv4-8.3.9
   - accounts_password_warn_age_login_defs
   - low_complexity
   - low_disruption
@@ -3372,7 +3419,8 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSS-Req-8.3.9
+  - PCI-DSS-Req-8.2.4
+  - PCI-DSSv4-8.3.9
   - accounts_password_warn_age_login_defs
   - low_complexity
   - low_disruption
@@ -3403,6 +3451,8 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - configure_strategy
   - high_severity
   - low_complexity
@@ -3417,11 +3467,11 @@
       cmd: authselect check
     register: result_authselect_check_cmd
     changed_when: false
-    ignore_errors: true
+    failed_when: false
   - name: Prevent Login to Accounts With Empty Password - Informative message based on the authselect integrity check result
     ansible.builtin.assert:
       that:
-      - result_authselect_check_cmd is success
+      - result_authselect_check_cmd.rc == 0
       fail_msg:
       - authselect integrity check failed. Remediation aborted!
       - This remediation could not be applied because an authselect profile was not selected or the selected profile is not
@@ -3470,6 +3520,8 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - configure_strategy
   - high_severity
   - low_complexity
@@ -3504,12 +3556,92 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
+  - PCI-DSSv4-8.3.6
+  - PCI-DSSv4-8.3.9
   - configure_strategy
   - high_severity
   - low_complexity
   - medium_disruption
   - no_empty_passwords
   - no_reboot_needed
+
+- name: Ensure that System Accounts Do Not Run a Shell Upon Login - Get All Local Users From /etc/passwd
+  ansible.builtin.getent:
+    database: passwd
+    split: ':'
+  tags:
+  - CCE-80843-6
+  - NIST-800-53-AC-6
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-CM-6(b)
+  - NIST-800-53-CM-6.1(iv)
+  - PCI-DSSv4-8.6.1
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - no_shelllogin_for_systemaccounts
+  - restrict_strategy
+  when:
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - no_shelllogin_for_systemaccounts | bool
+  - restrict_strategy | bool
+
+- name: Ensure that System Accounts Do Not Run a Shell Upon Login - Create local_users Variable From getent_passwd Facts
+  ansible.builtin.set_fact:
+    local_users: '{{ ansible_facts.getent_passwd | dict2items }}'
+  tags:
+  - CCE-80843-6
+  - NIST-800-53-AC-6
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-CM-6(b)
+  - NIST-800-53-CM-6.1(iv)
+  - PCI-DSSv4-8.6.1
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - no_shelllogin_for_systemaccounts
+  - restrict_strategy
+  when:
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - no_shelllogin_for_systemaccounts | bool
+  - restrict_strategy | bool
+
+- name: Ensure that System Accounts Do Not Run a Shell Upon Login -  Disable Login Shell for System Accounts
+  ansible.builtin.user:
+    name: '{{ item.key }}'
+    shell: /sbin/nologin
+  loop: '{{ local_users }}'
+  when:
+  - low_complexity | bool
+  - medium_disruption | bool
+  - medium_severity | bool
+  - no_reboot_needed | bool
+  - no_shelllogin_for_systemaccounts | bool
+  - restrict_strategy | bool
+  - item.key not in ['root']
+  - item.value[1]|int < 1000
+  - item.value[5] not in ['/sbin/shutdown', '/sbin/halt', '/bin/sync']
+  tags:
+  - CCE-80843-6
+  - NIST-800-53-AC-6
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-CM-6(b)
+  - NIST-800-53-CM-6.1(iv)
+  - PCI-DSSv4-8.6.1
+  - low_complexity
+  - medium_disruption
+  - medium_severity
+  - no_reboot_needed
+  - no_shelllogin_for_systemaccounts
+  - restrict_strategy
 
 - name: Gather the package facts
   package_facts:
@@ -3523,6 +3655,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3561,6 +3694,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3591,6 +3725,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3621,6 +3756,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3651,6 +3787,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3682,6 +3819,7 @@
   - NIST-800-53-AU-9(4)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-10.5
+  - PCI-DSSv4-10.3.1
   - file_permissions_var_log_audit
   - low_complexity
   - low_disruption
@@ -3699,6 +3837,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_grub2_cfg
   - low_complexity
@@ -3734,6 +3873,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_grub2_cfg
   - low_complexity
@@ -3763,6 +3903,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_grub2_cfg
   - low_complexity
@@ -3780,6 +3921,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_grub2_cfg
   - low_complexity
@@ -3815,6 +3957,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_grub2_cfg
   - low_complexity
@@ -3844,6 +3987,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-7.1
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_grub2_cfg
   - low_complexity
@@ -3932,7 +4076,7 @@
     package_facts:
       manager: auto
   - name: Enable service firewalld
-    service:
+    systemd:
       name: firewalld
       enabled: 'yes'
       state: started
@@ -3987,6 +4131,7 @@
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
   - PCI-DSS-Req-1.4.2
+  - PCI-DSSv4-1.4.2
   - disable_strategy
   - kernel_module_dccp_disabled
   - low_complexity
@@ -4016,6 +4161,7 @@
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
   - PCI-DSS-Req-1.4.2
+  - PCI-DSSv4-1.4.2
   - disable_strategy
   - kernel_module_dccp_disabled
   - low_complexity
@@ -4047,6 +4193,7 @@
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
   - PCI-DSS-Req-1.4.2
+  - PCI-DSSv4-1.4.2
   - disable_strategy
   - kernel_module_sctp_disabled
   - low_complexity
@@ -4078,6 +4225,7 @@
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
   - PCI-DSS-Req-1.4.2
+  - PCI-DSSv4-1.4.2
   - disable_strategy
   - kernel_module_sctp_disabled
   - low_complexity
@@ -4095,6 +4243,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_group
   - low_complexity
@@ -4127,6 +4276,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_group
   - low_complexity
@@ -4189,6 +4339,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_passwd
   - low_complexity
@@ -4221,6 +4372,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_passwd
   - low_complexity
@@ -4238,6 +4390,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_shadow
   - low_complexity
@@ -4270,6 +4423,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_groupowner_etc_shadow
   - low_complexity
@@ -4287,6 +4441,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_group
   - low_complexity
@@ -4319,6 +4474,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_group
   - low_complexity
@@ -4381,6 +4537,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_passwd
   - low_complexity
@@ -4413,6 +4570,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_passwd
   - low_complexity
@@ -4430,6 +4588,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_shadow
   - low_complexity
@@ -4462,6 +4621,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_owner_etc_shadow
   - low_complexity
@@ -4479,6 +4639,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_group
   - low_complexity
@@ -4511,6 +4672,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_group
   - low_complexity
@@ -4573,6 +4735,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_passwd
   - low_complexity
@@ -4605,6 +4768,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_passwd
   - low_complexity
@@ -4622,6 +4786,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_shadow
   - low_complexity
@@ -4654,6 +4819,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
+  - PCI-DSSv4-7.2.6
   - configure_strategy
   - file_permissions_etc_shadow
   - low_complexity
@@ -5004,7 +5170,7 @@
   - restrict_strategy
 
 - name: Find /lib/ file(s) recursively
-  command: find -H /lib/  -perm /g+w,o+w -type f -regex "^.*$"
+  command: find -H /lib/  -perm /g+w,o+w  -type f -regex "^.*$"
   register: files_found
   changed_when: false
   failed_when: false
@@ -5061,7 +5227,7 @@
   - no_reboot_needed | bool
 
 - name: Find /lib64/ file(s) recursively
-  command: find -H /lib64/  -perm /g+w,o+w -type f -regex "^.*$"
+  command: find -H /lib64/  -perm /g+w,o+w  -type f -regex "^.*$"
   register: files_found
   changed_when: false
   failed_when: false
@@ -5118,7 +5284,7 @@
   - no_reboot_needed | bool
 
 - name: Find /usr/lib/ file(s) recursively
-  command: find -H /usr/lib/  -perm /g+w,o+w -type f -regex "^.*$"
+  command: find -H /usr/lib/  -perm /g+w,o+w  -type f -regex "^.*$"
   register: files_found
   changed_when: false
   failed_when: false
@@ -5175,7 +5341,7 @@
   - no_reboot_needed | bool
 
 - name: Find /usr/lib64/ file(s) recursively
-  command: find -H /usr/lib64/  -perm /g+w,o+w -type f -regex "^.*$"
+  command: find -H /usr/lib64/  -perm /g+w,o+w  -type f -regex "^.*$"
   register: files_found
   changed_when: false
   failed_when: false
@@ -5331,15 +5497,19 @@
   - restrict_strategy
   - selinux_state
 
-- name: Disable service abrtd
+- name: Block Disable service abrtd
   block:
   - name: Disable service abrtd
-    systemd:
-      name: abrtd.service
-      enabled: 'no'
-      state: stopped
-      masked: 'yes'
-    ignore_errors: 'yes'
+    block:
+    - name: Disable service abrtd
+      systemd:
+        name: abrtd.service
+        enabled: 'no'
+        state: stopped
+        masked: 'yes'
+    rescue:
+    - name: Intentionally ignored previous 'Disable service abrtd' failure, service was already disabled
+      meta: noop
   when:
   - disable_strategy | bool
   - low_complexity | bool
@@ -5363,7 +5533,7 @@
   command: systemctl list-unit-files abrtd.socket
   register: socket_file_exists
   changed_when: false
-  ignore_errors: true
+  failed_when: socket_file_exists.rc not in [0, 1]
   check_mode: false
   when:
   - disable_strategy | bool
@@ -5420,7 +5590,8 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
-  - PCI-DSS-Req-2.2.4
+  - PCI-DSS-Req-2.2.2
+  - PCI-DSSv4-2.2.4
   - disable_strategy
   - high_severity
   - low_complexity
@@ -5443,6 +5614,7 @@
   tags:
   - CCE-80849-3
   - NIST-800-171-3.1.13
+  - PCI-DSSv4-2.2.4
   - disable_strategy
   - low_complexity
   - low_disruption
@@ -5457,15 +5629,19 @@
   - no_reboot_needed | bool
   - package_telnet_removed | bool
 
-- name: Disable service telnet
+- name: Block Disable service telnet
   block:
   - name: Disable service telnet
-    systemd:
-      name: telnet.service
-      enabled: 'no'
-      state: stopped
-      masked: 'yes'
-    ignore_errors: 'yes'
+    block:
+    - name: Disable service telnet
+      systemd:
+        name: telnet.service
+        enabled: 'no'
+        state: stopped
+        masked: 'yes'
+    rescue:
+    - name: Intentionally ignored previous 'Disable service telnet' failure, service was already disabled
+      meta: noop
   when:
   - disable_strategy | bool
   - high_severity | bool
@@ -5493,7 +5669,7 @@
   command: systemctl list-unit-files telnet.socket
   register: socket_file_exists
   changed_when: false
-  ignore_errors: true
+  failed_when: socket_file_exists.rc not in [0, 1]
   check_mode: false
   when:
   - disable_strategy | bool
@@ -5593,6 +5769,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-SC-10
   - PCI-DSS-Req-8.1.8
+  - PCI-DSSv4-8.2.8
   - low_complexity
   - low_disruption
   - medium_severity
@@ -5636,6 +5813,7 @@
   - restrict_strategy | bool
   - sshd_set_idle_timeout | bool
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - ansible_distribution == 'RedHat' and ansible_distribution_version is version('8.5', '<=')
   tags:
   - CCE-80906-1
   - CJIS-5.5.6
@@ -5649,6 +5827,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-SC-10
   - PCI-DSS-Req-8.1.8
+  - PCI-DSSv4-8.2.8
   - low_complexity
   - low_disruption
   - medium_severity
@@ -5700,6 +5879,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
+  - PCI-DSSv4-8.3.1
   - disable_host_auth
   - low_complexity
   - low_disruption
@@ -5966,7 +6146,8 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
-  - PCI-DSS-Req-2.2.6
+  - PCI-DSS-Req-2.2.4
+  - PCI-DSSv4-2.2.6
   - high_severity
   - low_complexity
   - low_disruption
@@ -6023,7 +6204,8 @@
   - NIST-800-53-CM-7(b)
   - NIST-800-53-IA-2
   - NIST-800-53-IA-2(5)
-  - PCI-DSS-Req-2.2.6
+  - PCI-DSS-Req-2.2.4
+  - PCI-DSSv4-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
@@ -6076,7 +6258,8 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(a)
   - NIST-800-53-CM-7(b)
-  - PCI-DSS-Req-2.2.6
+  - PCI-DSS-Req-2.2.4
+  - PCI-DSSv4-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
@@ -6129,7 +6312,8 @@
   - NIST-800-53-AC-8(a)
   - NIST-800-53-AC-8(c)
   - NIST-800-53-CM-6(a)
-  - PCI-DSS-Req-2.2.6
+  - PCI-DSS-Req-2.2.4
+  - PCI-DSSv4-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
