@@ -18,6 +18,7 @@ var_selinux_state: enforcing
 sshd_idle_timeout_value: '300'
 firewalld_sshd_zone: public
 DISA_STIG_RHEL_08_010010: true
+DISA_STIG_RHEL_08_010019: true
 DISA_STIG_RHEL_08_010020: true
 DISA_STIG_RHEL_08_010040: true
 DISA_STIG_RHEL_08_010110: true
@@ -50,7 +51,9 @@ DISA_STIG_RHEL_08_030070: true
 DISA_STIG_RHEL_08_040000: true
 DISA_STIG_RHEL_08_040023: true
 DISA_STIG_RHEL_08_040101: true
+DISA_STIG_RHEL_08_040200: true
 accounts_minimum_age_login_defs: true
+accounts_no_uid_except_zero: true
 accounts_password_pam_dcredit: true
 accounts_password_pam_difok: true
 accounts_password_pam_lcredit: true
