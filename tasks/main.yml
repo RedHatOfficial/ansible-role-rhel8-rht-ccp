@@ -41,6 +41,7 @@
   - NIST-800-53-SC-12(2)
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SC-13
+  - PCI-DSSv4-2.2.7
   - configure_crypto_policy
   - high_severity
   - low_complexity
@@ -68,6 +69,7 @@
   - NIST-800-53-SC-12(2)
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SC-13
+  - PCI-DSSv4-2.2.7
   - configure_crypto_policy
   - high_severity
   - low_complexity
@@ -97,7 +99,7 @@
   - NIST-800-53-MA-4(6)
   - NIST-800-53-SC-13
   - PCI-DSS-Req-2.2
-  - PCI-DSSv4-2.2
+  - PCI-DSSv4-2.2.7
   - configure_ssh_crypto_policy
   - disable_strategy
   - low_complexity
@@ -282,6 +284,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - ensure_redhat_gpgkey_installed
   - high_severity
   - medium_complexity
@@ -313,6 +316,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - ensure_redhat_gpgkey_installed
   - high_severity
   - medium_complexity
@@ -344,6 +348,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - ensure_redhat_gpgkey_installed
   - high_severity
   - medium_complexity
@@ -373,6 +378,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - ensure_redhat_gpgkey_installed
   - high_severity
   - medium_complexity
@@ -415,6 +421,7 @@
   - NIST-800-53-SC-12(3)
   - NIST-800-53-SI-7
   - PCI-DSS-Req-6.2
+  - PCI-DSSv4-6.3.3
   - ensure_redhat_gpgkey_installed
   - high_severity
   - medium_complexity
@@ -1919,7 +1926,6 @@
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
   - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_dcredit
   - low_complexity
   - low_disruption
@@ -1959,7 +1965,6 @@
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
   - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_dcredit
   - low_complexity
   - low_disruption
@@ -2035,7 +2040,6 @@
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
   - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_lcredit
   - low_complexity
   - low_disruption
@@ -2075,7 +2079,6 @@
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
   - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_lcredit
   - low_complexity
   - low_disruption
@@ -2588,8 +2591,6 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
-  - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_ucredit
   - low_complexity
   - low_disruption
@@ -2628,8 +2629,6 @@
   - NIST-800-53-IA-5(4)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
-  - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
   - accounts_password_pam_ucredit
   - low_complexity
   - low_disruption
@@ -3336,7 +3335,6 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSSv4-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3375,7 +3373,6 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-IA-5(1)(d)
   - NIST-800-53-IA-5(f)
-  - PCI-DSSv4-8.3.9
   - accounts_minimum_age_login_defs
   - low_complexity
   - low_disruption
@@ -3463,8 +3460,7 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
-  - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
+  - PCI-DSSv4-8.3.1
   - configure_strategy
   - high_severity
   - low_complexity
@@ -3534,8 +3530,7 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
-  - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
+  - PCI-DSSv4-8.3.1
   - configure_strategy
   - high_severity
   - low_complexity
@@ -3572,8 +3567,7 @@
   - NIST-800-53-IA-5(1)(a)
   - NIST-800-53-IA-5(c)
   - PCI-DSS-Req-8.2.3
-  - PCI-DSSv4-8.3.6
-  - PCI-DSSv4-8.3.9
+  - PCI-DSSv4-8.3.1
   - configure_strategy
   - high_severity
   - low_complexity
@@ -3594,8 +3588,7 @@
   - NIST-800-53-IA-2
   - NIST-800-53-IA-4(b)
   - PCI-DSS-Req-8.5
-  - PCI-DSSv4-8.2.2
-  - PCI-DSSv4-8.2.3
+  - PCI-DSSv4-8.2.1
   - accounts_no_uid_except_zero
   - high_severity
   - low_complexity
@@ -3632,8 +3625,7 @@
   - NIST-800-53-IA-2
   - NIST-800-53-IA-4(b)
   - PCI-DSS-Req-8.5
-  - PCI-DSSv4-8.2.2
-  - PCI-DSSv4-8.2.3
+  - PCI-DSSv4-8.2.1
   - accounts_no_uid_except_zero
   - high_severity
   - low_complexity
@@ -3651,7 +3643,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-6(b)
   - NIST-800-53-CM-6.1(iv)
-  - PCI-DSSv4-8.6.1
+  - PCI-DSSv4-8.2.2
   - low_complexity
   - medium_disruption
   - medium_severity
@@ -3675,7 +3667,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-6(b)
   - NIST-800-53-CM-6.1(iv)
-  - PCI-DSSv4-8.6.1
+  - PCI-DSSv4-8.2.2
   - low_complexity
   - medium_disruption
   - medium_severity
@@ -3711,7 +3703,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-6(b)
   - NIST-800-53-CM-6.1(iv)
-  - PCI-DSSv4-8.6.1
+  - PCI-DSSv4-8.2.2
   - low_complexity
   - medium_disruption
   - medium_severity
@@ -4079,6 +4071,7 @@
   - NIST-800-171-3.4.5
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_grub2_cfg
   - low_complexity
@@ -4112,6 +4105,7 @@
   - NIST-800-171-3.4.5
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_grub2_cfg
   - low_complexity
@@ -4139,6 +4133,7 @@
   - NIST-800-171-3.4.5
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_grub2_cfg
   - low_complexity
@@ -4159,6 +4154,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(b)
   - NIST-800-53-SC-7(21)
+  - PCI-DSSv4-1.2.1
   - enable_strategy
   - low_complexity
   - low_disruption
@@ -4207,6 +4203,7 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-CM-7(b)
   - NIST-800-53-SC-7(21)
+  - PCI-DSSv4-1.2.1
   - enable_strategy
   - low_complexity
   - low_disruption
@@ -4348,7 +4345,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_group
   - low_complexity
@@ -4381,7 +4378,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_group
   - low_complexity
@@ -4444,7 +4441,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_passwd
   - low_complexity
@@ -4477,7 +4474,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_passwd
   - low_complexity
@@ -4495,7 +4492,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_shadow
   - low_complexity
@@ -4528,7 +4525,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_groupowner_etc_shadow
   - low_complexity
@@ -4546,7 +4543,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_group
   - low_complexity
@@ -4579,7 +4576,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_group
   - low_complexity
@@ -4642,7 +4639,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_passwd
   - low_complexity
@@ -4675,7 +4672,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_passwd
   - low_complexity
@@ -4693,7 +4690,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_shadow
   - low_complexity
@@ -4726,7 +4723,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_owner_etc_shadow
   - low_complexity
@@ -4744,7 +4741,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_group
   - low_complexity
@@ -4777,7 +4774,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_group
   - low_complexity
@@ -4840,7 +4837,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_passwd
   - low_complexity
@@ -4873,7 +4870,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_passwd
   - low_complexity
@@ -4891,7 +4888,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_shadow
   - low_complexity
@@ -4924,7 +4921,7 @@
   - NIST-800-53-AC-6(1)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-8.7.c
-  - PCI-DSSv4-7.2.6
+  - PCI-DSSv4-2.2.6
   - configure_strategy
   - file_permissions_etc_shadow
   - low_complexity
@@ -5545,6 +5542,7 @@
   - NIST-800-53-AC-3(3)(a)
   - NIST-800-53-AU-9
   - NIST-800-53-SC-7(21)
+  - PCI-DSSv4-1.2.6
   - low_complexity
   - low_disruption
   - medium_severity
@@ -5874,7 +5872,6 @@
   - NIST-800-53-CM-6(a)
   - NIST-800-53-SC-10
   - PCI-DSS-Req-8.1.8
-  - PCI-DSSv4-8.2.8
   - low_complexity
   - low_disruption
   - medium_severity
@@ -6418,7 +6415,6 @@
   - NIST-800-53-AC-8(c)
   - NIST-800-53-CM-6(a)
   - PCI-DSS-Req-2.2.4
-  - PCI-DSSv4-2.2.6
   - low_complexity
   - low_disruption
   - medium_severity
