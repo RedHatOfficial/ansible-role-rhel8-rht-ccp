@@ -87,7 +87,7 @@
   lineinfile:
     dest: /etc/sysconfig/sshd
     state: absent
-    regexp: ^\s*(?i)CRYPTO_POLICY.*$
+    regexp: ^(?i)\s*CRYPTO_POLICY.*$
   tags:
   - CCE-80939-2
   - DISA-STIG-RHEL-08-010287
@@ -801,7 +801,7 @@
   - name: Limit Password Reuse - Check if expected PAM module line is present in {{ pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+requisite\s+pam_pwhistory.so\s*.*
+      regexp: ^\s*password\s+{{ 'requisite' | regex_escape() }}\s+pam_pwhistory.so\s*.*
       state: absent
     check_mode: true
     changed_when: false
@@ -1174,7 +1174,7 @@
   - name: Limit Password Reuse - Check if expected PAM module line is present in {{ pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+requisite\s+pam_pwhistory.so\s*.*
+      regexp: ^\s*password\s+{{ 'requisite' | regex_escape() }}\s+pam_pwhistory.so\s*.*
       state: absent
     check_mode: true
     changed_when: false
@@ -1218,7 +1218,7 @@
   - name: Limit Password Reuse - Check if the required PAM module option is present in {{ pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+requisite\s+pam_pwhistory.so\s*.*\sremember\b
+      regexp: ^\s*password\s+{{ 'requisite' | regex_escape() }}\s+pam_pwhistory.so\s*.*\sremember\b
       state: absent
     check_mode: true
     changed_when: false
@@ -1227,7 +1227,7 @@
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
       backrefs: true
-      regexp: ^(\s*password\s+requisite\s+pam_pwhistory.so.*)
+      regexp: ^(\s*password\s+{{ 'requisite' | regex_escape() }}\s+pam_pwhistory.so.*)
       line: \1 remember={{ var_password_pam_unix_remember }}
       state: present
     register: result_pam_remember_add
@@ -1238,7 +1238,7 @@
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
       backrefs: true
-      regexp: ^(\s*password\s+requisite\s+pam_pwhistory.so\s+.*)(remember)=[0-9a-zA-Z]+\s*(.*)
+      regexp: ^(\s*password\s+{{ 'requisite' | regex_escape() }}\s+pam_pwhistory.so\s+.*)(remember)=[0-9a-zA-Z]+\s*(.*)
       line: \1\2={{ var_password_pam_unix_remember }} \3
     register: result_pam_remember_edit
     when:
@@ -2350,7 +2350,7 @@
       option from "pam_pwquality.so" is not present in {{ pam_file_path }}
     ansible.builtin.replace:
       dest: '{{ pam_file_path }}'
-      regexp: (.*password.*.*.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
+      regexp: (.*password.*{{ '.*' | regex_escape() }}.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
       replace: \1\2
     register: result_pam_option_removal
   - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
@@ -2543,7 +2543,7 @@
       option from "pam_pwquality.so" is not present in {{ pam_file_path }}
     ansible.builtin.replace:
       dest: '{{ pam_file_path }}'
-      regexp: (.*password.*.*.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
+      regexp: (.*password.*{{ '.*' | regex_escape() }}.*pam_pwquality.so.*)\bretry\b=?[0-9a-zA-Z]*(.*)
       replace: \1\2
     register: result_pam_option_removal
   - name: Ensure PAM Enforces Password Requirements - Authentication Retry Prompts Permitted Per-Session - Ensure authselect
@@ -2932,7 +2932,7 @@
       }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+sufficient\s+pam_unix.so\s*.*
+      regexp: ^\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so\s*.*
       state: absent
     check_mode: true
     changed_when: false
@@ -2981,7 +2981,7 @@
       pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+sufficient\s+pam_unix.so\s*.*\ssha512\b
+      regexp: ^\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so\s*.*\ssha512\b
       state: absent
     check_mode: true
     changed_when: false
@@ -2991,7 +2991,7 @@
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
       backrefs: true
-      regexp: ^(\s*password\s+sufficient\s+pam_unix.so.*)
+      regexp: ^(\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so.*)
       line: \1 sha512
       state: present
     register: result_pam_sha512_add
@@ -3200,7 +3200,7 @@
   - name: Set PAM's Password Hashing Algorithm - Check if expected PAM module line is present in {{ pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+sufficient\s+pam_unix.so\s*.*
+      regexp: ^\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so\s*.*
       state: absent
     check_mode: true
     changed_when: false
@@ -3246,7 +3246,7 @@
   - name: Set PAM's Password Hashing Algorithm - Check if the required PAM module option is present in {{ pam_file_path }}
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
-      regexp: ^\s*password\s+sufficient\s+pam_unix.so\s*.*\ssha512\b
+      regexp: ^\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so\s*.*\ssha512\b
       state: absent
     check_mode: true
     changed_when: false
@@ -3256,7 +3256,7 @@
     ansible.builtin.lineinfile:
       path: '{{ pam_file_path }}'
       backrefs: true
-      regexp: ^(\s*password\s+sufficient\s+pam_unix.so.*)
+      regexp: ^(\s*password\s+{{ 'sufficient' | regex_escape() }}\s+pam_unix.so.*)
       line: \1 sha512
       state: present
     register: result_pam_sha512_add
@@ -3444,6 +3444,7 @@
   register: result_authselect_present
   when:
   - DISA_STIG_RHEL_08_020331 | bool
+  - DISA_STIG_RHEL_08_020332 | bool
   - configure_strategy | bool
   - high_severity | bool
   - low_complexity | bool
@@ -3455,6 +3456,7 @@
   - CCE-80841-0
   - CJIS-5.5.2
   - DISA-STIG-RHEL-08-020331
+  - DISA-STIG-RHEL-08-020332
   - NIST-800-171-3.1.1
   - NIST-800-171-3.1.5
   - NIST-800-53-CM-6(a)
@@ -3512,6 +3514,7 @@
     - result_authselect_enable_feature_cmd is success
   when:
   - DISA_STIG_RHEL_08_020331 | bool
+  - DISA_STIG_RHEL_08_020332 | bool
   - configure_strategy | bool
   - high_severity | bool
   - low_complexity | bool
@@ -3524,6 +3527,7 @@
   - CCE-80841-0
   - CJIS-5.5.2
   - DISA-STIG-RHEL-08-020331
+  - DISA-STIG-RHEL-08-020332
   - NIST-800-171-3.1.1
   - NIST-800-171-3.1.5
   - NIST-800-53-CM-6(a)
@@ -3548,6 +3552,7 @@
   - /etc/pam.d/password-auth
   when:
   - DISA_STIG_RHEL_08_020331 | bool
+  - DISA_STIG_RHEL_08_020332 | bool
   - configure_strategy | bool
   - high_severity | bool
   - low_complexity | bool
@@ -3560,6 +3565,7 @@
   - CCE-80841-0
   - CJIS-5.5.2
   - DISA-STIG-RHEL-08-020331
+  - DISA-STIG-RHEL-08-020332
   - NIST-800-171-3.1.1
   - NIST-800-171-3.1.5
   - NIST-800-53-CM-6(a)
@@ -5501,7 +5507,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/selinux/config
-      create: false
+      create: true
       regexp: ^SELINUXTYPE=
       state: absent
     check_mode: true
@@ -5510,7 +5516,7 @@
   - name: Deduplicate values from /etc/selinux/config
     lineinfile:
       path: /etc/selinux/config
-      create: false
+      create: true
       regexp: ^SELINUXTYPE=
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -5551,7 +5557,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/selinux/config
-      create: false
+      create: true
       regexp: ^SELINUX=
       state: absent
     check_mode: true
@@ -5560,7 +5566,7 @@
   - name: Deduplicate values from /etc/selinux/config
     lineinfile:
       path: /etc/selinux/config
-      create: false
+      create: true
       regexp: ^SELINUX=
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -5828,7 +5834,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*ClientAliveCountMax\s+
       state: absent
     check_mode: true
@@ -5837,7 +5843,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*ClientAliveCountMax\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -5848,7 +5854,7 @@
       regexp: (?i)^\s*ClientAliveCountMax\s+
       line: ClientAliveCountMax 0
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - low_complexity | bool
@@ -5881,7 +5887,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*ClientAliveInterval\s+
       state: absent
     check_mode: true
@@ -5890,7 +5896,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*ClientAliveInterval\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -5901,7 +5907,7 @@
       regexp: (?i)^\s*ClientAliveInterval\s+
       line: ClientAliveInterval {{ sshd_idle_timeout_value }}
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - DISA_STIG_RHEL_08_010201 | bool
@@ -5939,7 +5945,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*HostbasedAuthentication\s+
       state: absent
     check_mode: true
@@ -5948,7 +5954,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*HostbasedAuthentication\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -5959,7 +5965,7 @@
       regexp: (?i)^\s*HostbasedAuthentication\s+
       line: HostbasedAuthentication no
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - disable_host_auth | bool
@@ -6151,7 +6157,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*Protocol\s+
       state: absent
     check_mode: true
@@ -6160,7 +6166,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*Protocol\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -6171,7 +6177,7 @@
       regexp: (?i)^\s*Protocol\s+
       line: Protocol 2
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - high_severity | bool
@@ -6204,7 +6210,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitEmptyPasswords\s+
       state: absent
     check_mode: true
@@ -6213,7 +6219,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitEmptyPasswords\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -6224,7 +6230,7 @@
       regexp: (?i)^\s*PermitEmptyPasswords\s+
       line: PermitEmptyPasswords no
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - DISA_STIG_RHEL_08_020330 | bool
@@ -6259,7 +6265,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitRootLogin\s+
       state: absent
     check_mode: true
@@ -6268,7 +6274,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitRootLogin\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -6279,7 +6285,7 @@
       regexp: (?i)^\s*PermitRootLogin\s+
       line: PermitRootLogin no
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - DISA_STIG_RHEL_08_010550 | bool
@@ -6317,7 +6323,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitUserEnvironment\s+
       state: absent
     check_mode: true
@@ -6326,7 +6332,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*PermitUserEnvironment\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -6337,7 +6343,7 @@
       regexp: (?i)^\s*PermitUserEnvironment\s+
       line: PermitUserEnvironment no
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - DISA_STIG_RHEL_08_010830 | bool
@@ -6371,7 +6377,7 @@
   - name: Check for duplicate values
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*Banner\s+
       state: absent
     check_mode: true
@@ -6380,7 +6386,7 @@
   - name: Deduplicate values from /etc/ssh/sshd_config
     lineinfile:
       path: /etc/ssh/sshd_config
-      create: false
+      create: true
       regexp: (?i)^\s*Banner\s+
       state: absent
     when: dupes.found is defined and dupes.found > 1
@@ -6391,7 +6397,7 @@
       regexp: (?i)^\s*Banner\s+
       line: Banner /etc/issue
       state: present
-      insertbefore: ^[#\s]*Match
+      insertbefore: BOF
       validate: /usr/sbin/sshd -t -f %s
   when:
   - DISA_STIG_RHEL_08_010040 | bool
