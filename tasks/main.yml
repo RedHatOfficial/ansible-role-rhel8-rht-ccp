@@ -89,7 +89,7 @@
   lineinfile:
     dest: /etc/sysconfig/sshd
     state: absent
-    regexp: ^(?i)\s*CRYPTO_POLICY.*$
+    regexp: (?i)^\s*CRYPTO_POLICY.*$
   tags:
   - CCE-80939-2
   - DISA-STIG-RHEL-08-010287
@@ -236,7 +236,17 @@
     option: gpgcheck
     value: '1'
     no_extra_spaces: true
-  loop: '{{ repo_grep_results.stdout | regex_findall( ''(.+\.repo):\[(.+)\]\n?'' ) }}'
+  loop: '{{ repo_grep_results.stdout |regex_findall( ''(.+\.repo):\[(.+)\]\n?'' ) if repo_grep_results is not skipped else
+    []}}'
+  when:
+  - DISA_STIG_RHEL_08_010370 | bool
+  - enable_strategy | bool
+  - ensure_gpgcheck_never_disabled | bool
+  - high_severity | bool
+  - low_complexity | bool
+  - medium_disruption | bool
+  - no_reboot_needed | bool
+  - repo_grep_results is not skipped
   tags:
   - CCE-80792-5
   - CJIS-5.10.4.1
@@ -259,14 +269,6 @@
   - low_complexity
   - medium_disruption
   - no_reboot_needed
-  when:
-  - DISA_STIG_RHEL_08_010370 | bool
-  - enable_strategy | bool
-  - ensure_gpgcheck_never_disabled | bool
-  - high_severity | bool
-  - low_complexity | bool
-  - medium_disruption | bool
-  - no_reboot_needed | bool
 
 - name: Read permission of GPG key directory
   stat:
@@ -366,7 +368,9 @@
 
 - name: Set Fact - Valid fingerprints
   set_fact:
-    gpg_valid_fingerprints: ("567E347AD0044ADE55BA8A5F199E2F91FD431D51" "6A6AA7C97C8890AEC6AEBFE2F76F66C3D4082792")
+    gpg_valid_fingerprints:
+    - 567E347AD0044ADE55BA8A5F199E2F91FD431D51
+    - 6A6AA7C97C8890AEC6AEBFE2F76F66C3D4082792
   tags:
   - CCE-80795-8
   - CJIS-5.10.4.1
@@ -3783,7 +3787,7 @@
   - restrict_strategy | bool
   - '"audit" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
-  - (log_file_exists.stdout | length > 0)
+  - log_file_exists is not skipped and (log_file_exists.stdout | length > 0)
   tags:
   - CCE-80819-6
   - CJIS-5.4.1.1
@@ -3814,7 +3818,7 @@
   - restrict_strategy | bool
   - '"audit" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
-  - (log_file_exists is undefined) or (log_file_exists.stdout | length == 0)
+  - (log_file_exists is skipped) or (log_file_exists is undefined) or (log_file_exists.stdout | length == 0)
   tags:
   - CCE-80819-6
   - CJIS-5.4.1.1
@@ -3845,7 +3849,7 @@
   - restrict_strategy | bool
   - '"audit" in ansible_facts.packages'
   - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
-  - (log_file_line.stdout is defined) and (log_file_line.stdout | length > 0)
+  - (log_file_exists is not skipped) and (log_file_line.stdout is defined) and (log_file_line.stdout | length > 0)
   tags:
   - CCE-80819-6
   - CJIS-5.4.1.1
@@ -4216,7 +4220,7 @@
     create: true
     dest: /etc/modprobe.d/dccp.conf
     regexp: install\s+dccp
-    line: install dccp /bin/true
+    line: install dccp /bin/false
   when:
   - disable_strategy | bool
   - kernel_module_dccp_disabled | bool
@@ -4276,7 +4280,7 @@
     create: true
     dest: /etc/modprobe.d/sctp.conf
     regexp: install\s+sctp
-    line: install sctp /bin/true
+    line: install sctp /bin/false
   when:
   - DISA_STIG_RHEL_08_040023 | bool
   - disable_strategy | bool
@@ -5732,6 +5736,31 @@
   - no_reboot_needed | bool
   - package_telnet_removed | bool
 
+- name: Gather the package facts
+  package_facts:
+    manager: auto
+  tags:
+  - CCE-80887-3
+  - NIST-800-171-3.1.13
+  - NIST-800-171-3.4.7
+  - NIST-800-53-CM-6(a)
+  - NIST-800-53-CM-7(a)
+  - NIST-800-53-CM-7(b)
+  - NIST-800-53-IA-5(1)(c)
+  - disable_strategy
+  - high_severity
+  - low_complexity
+  - low_disruption
+  - no_reboot_needed
+  - service_telnet_disabled
+  when:
+  - disable_strategy | bool
+  - high_severity | bool
+  - low_complexity | bool
+  - low_disruption | bool
+  - no_reboot_needed | bool
+  - service_telnet_disabled | bool
+
 - name: Block Disable service telnet
   block:
   - name: Disable service telnet
@@ -5752,7 +5781,8 @@
   - low_disruption | bool
   - no_reboot_needed | bool
   - service_telnet_disabled | bool
-  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - ( ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"] and "telnet-server" in ansible_facts.packages
+    )
   tags:
   - CCE-80887-3
   - NIST-800-171-3.1.13
@@ -5781,7 +5811,8 @@
   - low_disruption | bool
   - no_reboot_needed | bool
   - service_telnet_disabled | bool
-  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - ( ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"] and "telnet-server" in ansible_facts.packages
+    )
   tags:
   - CCE-80887-3
   - NIST-800-171-3.1.13
@@ -5810,7 +5841,8 @@
   - low_disruption | bool
   - no_reboot_needed | bool
   - service_telnet_disabled | bool
-  - ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"]
+  - ( ansible_virtualization_type not in ["docker", "lxc", "openvz", "podman", "container"] and "telnet-server" in ansible_facts.packages
+    )
   - socket_file_exists.stdout_lines is search("telnet.socket",multiline=True)
   tags:
   - CCE-80887-3
